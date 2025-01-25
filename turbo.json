@@ -4,18 +4,18 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "format": {
-      "outputs": ["**/node_modules/.cache/.prettiercache"],
-      "cache": true
+      "outputs": []
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "format": {
+      "outputs": ["**/node_modules/.cache/.prettiercache"],
+      "cache": true
     },
     "biome:check": {
       "outputs": []
