@@ -1,0 +1,20 @@
+{
+  "name": "@cursor-rules-todoapp/configs",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "tsconfig",
+    "tailwind",
+    "biome"
+  ],
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "biome check .",
+    "format": "biome format . --write"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "typescript": "^5.3.3"
+  }
+} 
