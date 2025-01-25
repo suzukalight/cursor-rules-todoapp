@@ -76,7 +76,7 @@
 
 ### フロントエンド
 
-- React
+- React 19
 - Next.js App Router
 - Tailwind CSS
 - Shadcn/UI
@@ -94,7 +94,7 @@
 - Biome
 - TurboRepo
 - Vitest
-- Storybook
+- Storybook 8.5.1
 
 ## ファイル構造
 

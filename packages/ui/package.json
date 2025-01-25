@@ -17,7 +17,9 @@
     "format": "biome format . --write",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -35,6 +37,13 @@
     "@biomejs/biome": "^1.9.4",
     "@cursor-rules-todoapp/common": "workspace:*",
     "@cursor-rules-todoapp/configs": "workspace:*",
+    "@storybook/addon-essentials": "^8.5.1",
+    "@storybook/addon-interactions": "^8.5.1",
+    "@storybook/addon-links": "^8.5.1",
+    "@storybook/blocks": "^8.5.1",
+    "@storybook/react": "^8.5.1",
+    "@storybook/react-vite": "^8.5.1",
+    "@storybook/test": "^8.5.1",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
@@ -45,6 +54,7 @@
     "autoprefixer": "^10.4.17",
     "jsdom": "^24.0.0",
     "postcss": "^8.4.35",
+    "storybook": "^8.5.1",
     "tailwindcss": "^3.4.1",
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
