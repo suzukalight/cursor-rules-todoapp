@@ -54,3 +54,9 @@ pnpm type-check
 ## ライセンス
 
 MIT 
+
+## Testing
+
+各コンポーネントのテストについては、以下のドキュメントを参照してください：
+
+- [Toast Component Testing Guide](docs/testing/toast.md) - Toast コンポーネントのテストに関する特別な注意事項 
