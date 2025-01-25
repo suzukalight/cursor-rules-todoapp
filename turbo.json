@@ -6,10 +6,25 @@
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
-    "lint": {},
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "format": {
+      "outputs": ["**/node_modules/.cache/.prettiercache"],
+      "cache": true
+    },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "biome:check": {
+      "outputs": []
+    },
+    "biome:format": {
+      "outputs": []
+    },
+    "biome:lint": {
+      "outputs": []
     }
   }
 } 
