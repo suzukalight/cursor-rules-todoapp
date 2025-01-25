@@ -23,6 +23,7 @@
 - pnpm
 - Biome
 - TurboRepo
+- Vitest
 
 ## モノレポ構成
 
@@ -63,7 +64,7 @@ packages:
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
@@ -78,73 +79,75 @@ packages:
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
     }
   }
 }
 ```
 
-### 2. Next.jsアプリケーション
+### 2. 共通パッケージ（@cursor-rules-todoapp/common）
 
-`apps/web`ディレクトリに以下の設定で作成:
-- TypeScript
-- Tailwind CSS
-- App Router
-- Import Alias (@/*)
+#### 型定義
+- Todo関連の型定義（`Todo`, `TodoStatus`, `CreateTodoInput`, `UpdateTodoInput`）
+- 定数（`TODO_STATUS`, `TODO_STATUS_LABEL`）
 
-### 3. Biomeの設定
+#### テスト
+- Vitestを使用した単体テスト
+- 定数のテストケース
 
-#### インストール
-```bash
-pnpm add -D -w @biomejs/biome
-```
+### 3. データベースパッケージ（@cursor-rules-todoapp/db）
 
-#### 設定ファイル
-`biome.json`:
-```json
-{
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100
-  }
+#### Prismaの設定
+```prisma
+model Todo {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  @@map("todos")
 }
 ```
 
-#### スクリプト
-```json
-{
-  "scripts": {
-    "biome:check": "biome check .",
-    "biome:format": "biome format . --write",
-    "biome:lint": "biome lint ."
-  }
-}
-```
+#### リポジトリパターン
+- TodoRepositoryの実装
+- CRUDメソッドの提供
+- 単体テストの実装
+
+#### テスト環境
+- テスト用データベースの設定
+- テストケースの実装
+- カバレッジレポートの生成
+
+### 4. 設定パッケージ（@cursor-rules-todoapp/configs）
+
+#### TypeScript設定
+- base.json: 基本設定
+- nextjs.json: Next.js用設定
+- react-library.json: Reactライブラリ用設定
+
+#### Tailwind設定
+- 基本設定
+- Shadcn/UI用の設定
+- アニメーション設定
 
 ## 次のステップ
 
-1. 共通パッケージの設定
-   - packages/ui
-   - packages/db
-   - packages/configs
-   - packages/common
+1. UIパッケージの設定
+   - Shadcn/UIコンポーネント
+   - カスタムコンポーネント
 
 2. TRPCの設定
    - APIルーターの設定
    - クライアント設定
 
-3. Prismaの設定
-   - スキーマ設計
-   - マイグレーション
-   - シード 
+3. フロントエンドの実装
+   - ページの作成
+   - コンポーネントの実装
+   - APIとの連携 
