@@ -1,0 +1,11 @@
+{
+  "extends": "@cursor-rules-todoapp/configs/tsconfig/base.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+} 
