@@ -1,0 +1,29 @@
+{
+  "name": "@cursor-rules-todoapp/repo-sqlite",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push --skip-generate"
+  },
+  "dependencies": {
+    "@cursor-rules-todoapp/domain": "workspace:*",
+    "@prisma/client": "^5.9.1"
+  },
+  "devDependencies": {
+    "@cursor-rules-todoapp/configs": "workspace:*",
+    "prisma": "^5.9.1",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+} 
