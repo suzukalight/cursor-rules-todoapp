@@ -15,12 +15,17 @@
     "dev": "tsup --watch",
     "lint": "biome check .",
     "format": "biome format . --write",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@cursor-rules-todoapp/configs": "workspace:*",
+    "@vitest/coverage-v8": "^1.2.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
   }
 } 
