@@ -59,4 +59,5 @@ MIT
 
 各コンポーネントのテストについては、以下のドキュメントを参照してください：
 
-- [Toast Component Testing Guide](docs/testing/toast.md) - Toast コンポーネントのテストに関する特別な注意事項 
+- [Toast Component Testing Guide](docs/testing/toast.md) - Toast コンポーネントのテストに関する特別な注意事項
+- [Dialog Component Testing Guide](docs/testing/dialog.md) - Dialog コンポーネントのテストに関する特別な注意事項と警告の説明 
