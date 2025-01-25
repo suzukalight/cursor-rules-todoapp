@@ -94,10 +94,11 @@
 - Biome
 - TurboRepo
 - Vitest
+- Storybook
 
 ## ファイル構造
 
-```
+```plaintext
 root
 ├── apps                  # アプリケーション
 │ ├── web                 # ウェブアプリケーション
