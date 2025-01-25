@@ -28,9 +28,11 @@
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-select": "^2.1.5",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "lucide-react": "^0.474.0",
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {

@@ -58,6 +58,8 @@
 - 共通UIコンポーネント
 - Shadcn/UIコンポーネント
 - スタイル定義
+- Storybook
+- テスト
 
 ### apps/web
 
