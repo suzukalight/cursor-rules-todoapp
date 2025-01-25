@@ -1,0 +1,17 @@
+{
+  "extends": "../configs/tsconfig/base.json",
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "module": "esnext",
+    "lib": ["ES2015", "DOM"],
+    "types": ["vitest/globals", "node"]
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
+} 
