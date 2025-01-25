@@ -1,0 +1,22 @@
+{
+  "name": "@cursor-rules-todoapp/domain",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check .",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "devDependencies": {
+    "@cursor-rules-todoapp/configs": "workspace:*",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+} 

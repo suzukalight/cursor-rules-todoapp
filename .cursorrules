@@ -32,7 +32,36 @@
 - **パッケージ間の依存関係は明確にしてください。** 循環参照を避け、適切な層構造を維持してください。
 - **ドキュメントを各ステップ終了時に作成してください。** ドキュメントは `/docs` ディレクトリに保存してください。
 
+## アーキテクチャ
+
+### バックエンド
+
+- クリーンアーキテクチャを採用
+- 依存関係の方向は外から内へ（UI → ユースケース → ドメイン）
+- 各レイヤーは独立して実装・テスト可能
+- リポジトリパターンによるデータアクセスの抽象化
+- トランザクション管理はリポジトリレベルで実施
+
 ## パッケージ構成
+
+### @cursor-rules-todoapp/domain
+
+- ドメインモデル（エンティティ、値オブジェクト）
+- ドメインサービス
+- リポジトリインターフェース
+- ユースケース
+
+### @cursor-rules-todoapp/repo-sqlite
+
+- SQLiteリポジトリの実装
+- Prismaクライアント
+- データマッパー
+
+### @cursor-rules-todoapp/repo-postgres（将来的）
+
+- PostgreSQLリポジトリの実装
+- Prismaクライアント
+- データマッパー
 
 ### @cursor-rules-todoapp/common
 
@@ -47,12 +76,6 @@
 - Tailwind設定
 - その他の共通設定
 
-### @cursor-rules-todoapp/db
-
-- Prismaクライアント
-- リポジトリ実装
-- データベース関連の機能
-
 ### @cursor-rules-todoapp/ui
 
 - 共通UIコンポーネント
@@ -66,6 +89,13 @@
 - ページ実装
 - APIルート
 - アプリケーション固有の機能
+
+### apps/api
+
+- tRPCルーター
+- DIコンテナ
+- エラーハンドリング
+- ミドルウェア
 
 ## 技術スタック
 
@@ -88,7 +118,8 @@
 - TRPC
 - Zod
 - Prisma
-- SQLite
+- SQLite（開発環境）
+- PostgreSQL（将来的な本番環境）
 
 ### 開発ツール
 
@@ -102,23 +133,37 @@
 
 ```plaintext
 root
-├── apps                  # アプリケーション
-│ ├── web                 # ウェブアプリケーション
+├── apps                    # アプリケーション
+│ ├── web                   # ウェブアプリケーション
 │ │ ├── src
 │ │ │ ├── app
 │ │ │ │ ├── api           # API
-│ │ │ │ ├── somePageName # ページ
+│ │ │ │ ├── somePageName  # ページ
 │ │ │ │ │ ├── components  # コンポーネント
-│ │ │ │ │ ├── hooks       # フック
-│ │ │ │ │ ├── page.tsx    # ページ
-│ │ │ │ │ └── [id].tsx    # ページ
+│ │ │ │ │ ├── hooks      # フック
+│ │ │ │ │ ├── page.tsx   # ページ
+│ │ │ │ │ └── [id].tsx   # ページ
 │ │ │ ├── components      # コンポーネント
-│ │ │ ├── hooks           # フック
-│ │ │ └── utils           # ユーティリティ
-│ │ └── mobile            # モバイルアプリケーション
-├── packages              # パッケージ
+│ │ │ ├── hooks          # フック
+│ │ │ └── utils          # ユーティリティ
+│ └── api                  # APIサーバー
+│   ├── src
+│   │ ├── router         # tRPCルーター
+│   │ ├── container      # DIコンテナ
+│   │ ├── middleware     # ミドルウェア
+│   │ └── errors         # エラーハンドリング
+├── packages               # パッケージ
+│ ├── domain              # ドメイン層
+│ │ ├── src
+│ │ │ ├── entities      # エンティティ
+│ │ │ ├── services      # ドメインサービス
+│ │ │ ├── repositories  # リポジトリインターフェース
+│ │ │ └── usecases      # ユースケース
+│ ├── repo-sqlite         # SQLiteリポジトリ
+│ │ ├── src
+│ │ │ ├── repositories  # リポジトリ実装
+│ │ │ └── mappers       # データマッパー
 │ ├── ui                  # UI
-│ ├── db                  # DB
 │ ├── configs             # 各種設定ファイル
 │ └── common              # ユーティリティ
 ├── docs                  # ドキュメント
