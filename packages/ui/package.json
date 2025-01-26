@@ -10,16 +10,15 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && storybook build",
+    "build:watch": "tsup --watch",
     "clean": "rm -rf .turbo node_modules dist",
-    "dev": "tsup --watch",
+    "dev": "storybook dev -p 6006",
     "lint": "biome check .",
     "format": "biome format . --write",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:coverage": "vitest run --coverage",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
     "react": "^19.0.0",

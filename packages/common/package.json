@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "build": "tsup",
+    "build:watch": "tsup --watch",
     "clean": "rm -rf .turbo node_modules dist",
-    "dev": "tsup --watch",
     "lint": "biome check .",
     "format": "biome format . --write",
     "typecheck": "tsc --noEmit",

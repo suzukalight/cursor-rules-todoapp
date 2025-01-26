@@ -6,12 +6,17 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
-    "lint": {
-      "outputs": []
+    "build:watch": {
+      "dependsOn": ["^build"],
+      "persistent": true,
+      "cache": false
     },
     "dev": {
-      "cache": false,
-      "persistent": true
+      "persistent": true,
+      "cache": false
+    },
+    "lint": {
+      "outputs": []
     },
     "format": {
       "outputs": ["**/node_modules/.cache/.prettiercache"],
