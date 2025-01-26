@@ -8,13 +8,10 @@ datasource db {
 }
 
 model Todo {
-  id          String    @id
+  id          String   @id @default(uuid())
   title       String
   description String?
-  status      String    @default("pending")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  completedAt DateTime?
-
-  @@map("todos")
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 } 
