@@ -22,5 +22,10 @@
     "@biomejs/biome": "^1.9.4",
     "turbo": "latest"
   },
-  "packageManager": "pnpm@8.9.0"
+  "packageManager": "pnpm@8.9.0",
+  "dependencies": {
+    "@tanstack/react-query": "^5.64.2",
+    "@trpc/react-query": "^10.45.2",
+    "web": "workspace:^"
+  }
 }

@@ -6,9 +6,9 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { TodoFilter } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
-import { api } from '../utils/api';
+import { trpc } from '../utils/api';
 
-type TodoResponse = {
+interface TodoData {
   id: string;
   title: string;
   description?: string;
@@ -16,17 +16,7 @@ type TodoResponse = {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
-};
-
-const convertDates = (todo: TodoResponse): Todo => ({
-  id: todo.id,
-  title: todo.title,
-  description: todo.description,
-  status: todo.status,
-  createdAt: new Date(todo.createdAt),
-  updatedAt: new Date(todo.updatedAt),
-  completedAt: todo.completedAt ? new Date(todo.completedAt) : undefined,
-});
+}
 
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -34,25 +24,84 @@ export default function TodoPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt'>('createdAt');
 
+  const { data: todoData } = trpc.todo.findAll.useQuery();
+
   useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const data = await api.todo.findAll.query();
-        setTodos(data.map(convertDates));
-      } catch (error) {
-        console.error('Failed to fetch todos:', error);
-      }
-    };
-    fetchTodos();
-  }, []);
+    if (todoData) {
+      const convertedTodos = todoData.map(todo => {
+        const data = ('props' in todo ? todo.props : todo) as TodoData;
+        return {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          status: data.status,
+          createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+          updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+          completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
+        };
+      });
+      setTodos(convertedTodos);
+    }
+  }, [todoData]);
+
+  const createTodoMutation = trpc.todo.create.useMutation({
+    onSuccess: (data) => {
+      const todoData = ('props' in data ? data.props : data) as TodoData;
+      const newTodo: Todo = {
+        id: todoData.id,
+        title: todoData.title,
+        description: todoData.description,
+        status: todoData.status,
+        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
+        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
+        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
+      };
+      setTodos((prev) => [...prev, newTodo]);
+    },
+  });
+
+  const updateTodoMutation = trpc.todo.update.useMutation({
+    onSuccess: (data) => {
+      const todoData = ('props' in data ? data.props : data) as TodoData;
+      const updatedTodo: Todo = {
+        id: todoData.id,
+        title: todoData.title,
+        description: todoData.description,
+        status: todoData.status,
+        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
+        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
+        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
+      };
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo))
+      );
+    },
+  });
+
+  const changeTodoStatusMutation = trpc.todo.changeStatus.useMutation({
+    onSuccess: (data) => {
+      const todoData = ('props' in data ? data.props : data) as TodoData;
+      const updatedTodo: Todo = {
+        id: todoData.id,
+        title: todoData.title,
+        description: todoData.description,
+        status: todoData.status,
+        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
+        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
+        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
+      };
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo))
+      );
+    },
+  });
 
   const handleCreateTodo = async () => {
     try {
-      const newTodo = await api.todo.create.mutate({
+      await createTodoMutation.mutateAsync({
         title: '新しいタスク',
         description: '',
       });
-      setTodos((prev) => [...prev, convertDates(newTodo)]);
     } catch (error) {
       console.error('Failed to create todo:', error);
     }
@@ -60,13 +109,10 @@ export default function TodoPage() {
 
   const handleUpdateTitle = async (id: string, title: string) => {
     try {
-      const updatedTodo = await api.todo.update.mutate({
+      await updateTodoMutation.mutateAsync({
         id,
         title,
       });
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === id ? convertDates(updatedTodo) : todo))
-      );
     } catch (error) {
       console.error('Failed to update todo:', error);
     }
@@ -74,13 +120,10 @@ export default function TodoPage() {
 
   const handleUpdateStatus = async (id: string, status: TodoStatus) => {
     try {
-      const updatedTodo = await api.todo.changeStatus.mutate({
+      await changeTodoStatusMutation.mutateAsync({
         id,
         action: status === 'completed' ? 'complete' : 'cancel',
       });
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === id ? convertDates(updatedTodo) : todo))
-      );
     } catch (error) {
       console.error('Failed to update todo status:', error);
     }

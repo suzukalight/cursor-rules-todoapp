@@ -1,57 +1,59 @@
-import { Button, Input, Textarea } from '@cursor-rules-todoapp/ui';
+'use client';
+
+import { Button } from '@cursor-rules-todoapp/ui';
 import { useState } from 'react';
-import { api } from '../../utils/api';
+import { trpc } from '../../utils/api';
 
-export interface TodoFormProps {
-  onSuccess?: () => void;
-}
-
-export const TodoForm: React.FC<TodoFormProps> = ({ onSuccess }) => {
+export function TodoForm() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
-  const createTodo = api.todo.create.useMutation({
+  const createTodoMutation = trpc.todo.create.useMutation({
     onSuccess: () => {
       setTitle('');
       setDescription('');
-      onSuccess?.();
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createTodo.mutate({ title, description });
+    try {
+      await createTodoMutation.mutateAsync({
+        title,
+        description,
+      });
+    } catch (error) {
+      console.error('Failed to create todo:', error);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Input
+        <label htmlFor="title" className="block text-sm font-medium">
+          タイトル
+        </label>
+        <input
           type="text"
+          id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="タイトルを入力"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
           required
-          aria-label="タイトル"
         />
       </div>
       <div>
-        <Textarea
+        <label htmlFor="description" className="block text-sm font-medium">
+          説明
+        </label>
+        <textarea
+          id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="説明を入力（任意）"
-          aria-label="説明"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
         />
       </div>
-      <div>
-        <Button
-          type="submit"
-          disabled={createTodo.isLoading}
-          aria-busy={createTodo.isLoading}
-        >
-          {createTodo.isLoading ? '作成中...' : 'Todoを作成'}
-        </Button>
-      </div>
+      <Button type="submit">作成</Button>
     </form>
   );
-}; 
+} 

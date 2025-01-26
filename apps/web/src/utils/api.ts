@@ -1,10 +1,16 @@
 import type { AppRouter } from '@cursor-rules-todoapp/api';
-import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
+import { QueryClient } from '@tanstack/react-query';
+import { httpBatchLink } from '@trpc/client';
+import { createTRPCReact } from '@trpc/react-query';
 
-export const api = createTRPCProxyClient<AppRouter>({
+export const trpc = createTRPCReact<AppRouter>();
+
+export const queryClient = new QueryClient();
+
+export const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/trpc',
+      url: 'http://localhost:3001/trpc',
     }),
   ],
 }); 
