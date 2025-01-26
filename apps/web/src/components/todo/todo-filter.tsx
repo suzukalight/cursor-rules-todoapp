@@ -1,4 +1,4 @@
-import type { TodoStatus } from '@cursor-rules-todoapp/domain';
+import type { TodoStatus } from '@cursor-rules-todoapp/common';
 import {
   Input,
   Select,
