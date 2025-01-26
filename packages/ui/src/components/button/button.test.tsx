@@ -7,31 +7,31 @@ import { describe, expect, it, vi } from 'vitest';
 import { Button } from './button';
 
 describe('Button', () => {
-  it('renders correctly', () => {
+  it('正しくレンダリングされる', () => {
     render(<Button>Click me</Button>);
     expect(screen.getByRole('button')).toBeInTheDocument();
     expect(screen.getByText('Click me')).toBeInTheDocument();
   });
 
-  it('applies default variant styles', () => {
+  it('デフォルトのバリアントスタイルが適用される', () => {
     render(<Button>Default Button</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('bg-primary');
   });
 
-  it('applies custom variant styles', () => {
+  it('カスタムバリアントスタイルが適用される', () => {
     render(<Button variant="secondary">Secondary Button</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('bg-secondary');
   });
 
-  it('applies size styles', () => {
+  it('サイズスタイルが適用される', () => {
     render(<Button size="lg">Large Button</Button>);
     const button = screen.getByRole('button');
     expect(button).toHaveClass('h-10');
   });
 
-  it('handles click events', async () => {
+  it('クリックイベントを処理できる', async () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
     
@@ -41,13 +41,13 @@ describe('Button', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('forwards ref correctly', () => {
+  it('refが正しく転送される', () => {
     const ref = React.createRef<HTMLButtonElement>();
     render(<Button ref={ref}>Button with ref</Button>);
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
 
-  it('renders as child component when asChild is true', () => {
+  it('asChildがtrueの場合、子コンポーネントとしてレンダリングされる', () => {
     render(
       <Button asChild>
         <a href="/">Link Button</a>
@@ -58,13 +58,13 @@ describe('Button', () => {
     expect(link).toHaveAttribute('href', '/');
   });
 
-  it('is accessible', () => {
-    render(<Button aria-label="Accessible Button">Click me</Button>);
-    const button = screen.getByLabelText('Accessible Button');
+  it('アクセシビリティに対応している', () => {
+    render(<Button aria-label="アクセシブルなボタン">Click me</Button>);
+    const button = screen.getByLabelText('アクセシブルなボタン');
     expect(button).toBeInTheDocument();
   });
 
-  it('can be disabled', () => {
+  it('無効化できる', () => {
     render(<Button disabled>Disabled Button</Button>);
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();

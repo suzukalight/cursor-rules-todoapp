@@ -10,32 +10,32 @@ import {
 } from './select';
 
 describe('Select', () => {
-  it('renders correctly', () => {
+  it('正しくレンダリングされる', () => {
     render(
       <Select>
         <SelectTrigger>
-          <SelectValue placeholder="Select an option" />
+          <SelectValue placeholder="オプションを選択" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="1">Option 1</SelectItem>
-          <SelectItem value="2">Option 2</SelectItem>
+          <SelectItem value="1">オプション1</SelectItem>
+          <SelectItem value="2">オプション2</SelectItem>
         </SelectContent>
       </Select>,
     );
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByText('Select an option')).toBeInTheDocument();
+    expect(screen.getByText('オプションを選択')).toBeInTheDocument();
   });
 
-  it('handles disabled state', () => {
+  it('無効化状態を処理できる', () => {
     render(
       <Select disabled>
         <SelectTrigger>
-          <SelectValue placeholder="Select an option" />
+          <SelectValue placeholder="オプションを選択" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="1">Option 1</SelectItem>
-          <SelectItem value="2">Option 2</SelectItem>
+          <SelectItem value="1">オプション1</SelectItem>
+          <SelectItem value="2">オプション2</SelectItem>
         </SelectContent>
       </Select>,
     );

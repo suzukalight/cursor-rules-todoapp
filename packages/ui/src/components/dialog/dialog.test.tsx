@@ -15,72 +15,72 @@ import {
 } from './dialog';
 
 describe('Dialog', () => {
-  // TODO: Most tests are temporarily disabled due to Radix UI's Presence component issues
-  // See docs/testing/dialog.md for more details
+  // TODO: RadixUIのPresenceコンポーネントの問題により、ほとんどのテストは一時的に無効化されています
+  // 詳細は docs/testing/dialog.md を参照してください
 
-  it('renders trigger button correctly', () => {
+  it('トリガーボタンが正しくレンダリングされる', () => {
     render(
       <Dialog>
         <DialogTrigger asChild>
-          <Button>Open Dialog</Button>
+          <Button>ダイアログを開く</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dialog Title</DialogTitle>
-            <DialogDescription>Dialog Description</DialogDescription>
+            <DialogTitle>ダイアログのタイトル</DialogTitle>
+            <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>,
     );
 
-    expect(screen.getByRole('button')).toHaveTextContent('Open Dialog');
+    expect(screen.getByRole('button')).toHaveTextContent('ダイアログを開く');
   });
 
-  it('opens and closes dialog on click', async () => {
+  it('クリックでダイアログを開閉できる', async () => {
     const user = userEvent.setup();
     render(
       <Dialog>
         <DialogTrigger asChild>
-          <Button>Open Dialog</Button>
+          <Button>ダイアログを開く</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dialog Title</DialogTitle>
-            <DialogDescription>Dialog Description</DialogDescription>
+            <DialogTitle>ダイアログのタイトル</DialogTitle>
+            <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>,
     );
 
-    // Initially dialog should be closed
+    // 初期状態ではダイアログは閉じている
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-    // Open dialog
+    // ダイアログを開く
     await act(async () => {
       await user.click(screen.getByRole('button'));
     });
 
-    // Wait for dialog to appear
+    // ダイアログが表示されるのを待つ
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
-    // Check dialog content
-    expect(screen.getByText('Dialog Title')).toBeInTheDocument();
-    expect(screen.getByText('Dialog Description')).toBeInTheDocument();
+    // ダイアログの内容を確認
+    expect(screen.getByText('ダイアログのタイトル')).toBeInTheDocument();
+    expect(screen.getByText('ダイアログの説明')).toBeInTheDocument();
 
-    // Close dialog
+    // ダイアログを閉じる
     await act(async () => {
       await user.keyboard('{Escape}');
     });
 
-    // Wait for dialog to disappear
+    // ダイアログが消えるのを待つ
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
 
-  it('handles custom close action', async () => {
+  it('カスタムのクローズアクションを処理できる', async () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
     const handleClose = () => {
@@ -90,74 +90,74 @@ describe('Dialog', () => {
     render(
       <Dialog open onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
-          <Button>Open Dialog</Button>
+          <Button>ダイアログを開く</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dialog Title</DialogTitle>
-            <DialogDescription>Dialog Description</DialogDescription>
+            <DialogTitle>ダイアログのタイトル</DialogTitle>
+            <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
           <Button onClick={handleClose} data-testid="custom-close">
-            Custom Close
+            カスタム閉じるボタン
           </Button>
         </DialogContent>
       </Dialog>,
     );
 
-    // Dialog should be open initially
+    // 初期状態ではダイアログは開いている
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
-    // Close dialog using custom button
+    // カスタムボタンでダイアログを閉じる
     await act(async () => {
       await user.click(screen.getByTestId('custom-close'));
     });
 
-    // Wait for onOpenChange to be called
+    // onOpenChangeが呼ばれるのを待つ
     await waitFor(() => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
   });
 
-  it('traps focus within dialog', async () => {
+  it('ダイアログ内でフォーカスがトラップされる', async () => {
     const user = userEvent.setup();
     render(
       <Dialog>
         <DialogTrigger asChild>
-          <Button>Open Dialog</Button>
+          <Button>ダイアログを開く</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dialog Title</DialogTitle>
-            <DialogDescription>Dialog Description</DialogDescription>
+            <DialogTitle>ダイアログのタイトル</DialogTitle>
+            <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
-          <Button>First</Button>
-          <Button>Second</Button>
-          <Button>Third</Button>
+          <Button>最初</Button>
+          <Button>次</Button>
+          <Button>最後</Button>
         </DialogContent>
       </Dialog>,
     );
 
-    // Open dialog
+    // ダイアログを開く
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Open Dialog' }));
+      await user.click(screen.getByRole('button', { name: 'ダイアログを開く' }));
     });
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
-    // Check focus trap
+    // フォーカストラップをチェック
     await act(async () => {
       await user.tab();
       await user.tab();
       await user.tab();
-      await user.tab(); // Should cycle back to first focusable element
+      await user.tab(); // 最初のフォーカス可能な要素に戻るはず
     });
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'First' })).toHaveFocus();
+      expect(screen.getByRole('button', { name: '最初' })).toHaveFocus();
     });
   });
 }); 
