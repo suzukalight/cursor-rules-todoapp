@@ -1,12 +1,15 @@
 import { TRPCError } from '@trpc/server';
 
-export const handleError = (error: unknown): never => {
+export const handleError = (error: unknown): void => {
   if (error instanceof TRPCError) {
-    throw error;
+    console.error('[tRPC Error]', error.code, error.message);
+    return;
   }
 
-  throw new TRPCError({
-    code: 'INTERNAL_SERVER_ERROR',
-    message: 'Internal server error',
-  });
+  if (error instanceof Error) {
+    console.error('[Error]', error.message);
+    return;
+  }
+
+  console.error('[Unknown Error]', error);
 }; 
