@@ -1,142 +1,101 @@
 # Todo API
 
-## エンドポイント一覧
+## 概要
 
-### Todo作成
+TodoアプリケーションのAPIエンドポイントです。tRPCを使用して実装されています。
 
-```typescript
-POST /api/trpc/todo.create
+## エンドポイント
 
-// リクエスト
-{
-  title: string;      // タイトル（必須）
-  description?: string; // 説明（任意）
-}
+### create
 
-// レスポンス
-{
-  id: string;
-  title: string;
-  description?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-}
-```
+新しいTodoを作成します。
 
-### Todo更新
+- **メソッド**: `mutation`
+- **入力**:
+  ```typescript
+  {
+    title: string;      // 必須、1文字以上
+    description?: string; // オプション
+  }
+  ```
+- **戻り値**: `Todo`
+- **エラー**:
+  - バリデーションエラー: タイトルが空の場合
 
-```typescript
-POST /api/trpc/todo.update
+### update
 
-// リクエスト
-{
-  id: string;         // Todo ID（必須）
-  title?: string;     // 新しいタイトル（任意）
-  description?: string; // 新しい説明（任意）
-}
+既存のTodoを更新します。
 
-// レスポンス
-{
-  id: string;
-  title: string;
-  description?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-}
+- **メソッド**: `mutation`
+- **入力**:
+  ```typescript
+  {
+    id: string;         // 必須
+    title?: string;     // オプション、1文字以上
+    description?: string; // オプション
+  }
+  ```
+- **戻り値**: `Todo`
+- **エラー**:
+  - `NOT_FOUND`: 指定されたIDのTodoが存在しない場合
+  - バリデーションエラー: タイトルが空の場合
 
-// エラー
-- Todo not found: 指定されたIDのTodoが見つからない場合
-```
+### changeStatus
 
-### Todoステータス変更
+Todoのステータスを変更します。
 
-```typescript
-POST /api/trpc/todo.changeStatus
+- **メソッド**: `mutation`
+- **入力**:
+  ```typescript
+  {
+    id: string;
+    action: 'complete' | 'cancel';
+  }
+  ```
+- **戻り値**: `Todo`
+- **エラー**:
+  - `NOT_FOUND`: 指定されたIDのTodoが存在しない場合
 
-// リクエスト
-{
-  id: string;         // Todo ID（必須）
-  action: 'complete' | 'cancel'; // 実行するアクション（必須）
-}
+### findById
 
-// レスポンス
-{
-  id: string;
-  title: string;
-  description?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-}
+指定されたIDのTodoを取得します。
 
-// エラー
-- Todo not found: 指定されたIDのTodoが見つからない場合
-- Todo is already completed: 既に完了済みのTodoを完了しようとした場合
-- Todo is already cancelled: 既にキャンセル済みのTodoをキャンセルしようとした場合
-```
+- **メソッド**: `query`
+- **入力**: `string` (Todo ID)
+- **戻り値**: `Todo`
+- **エラー**:
+  - `NOT_FOUND`: 指定されたIDのTodoが存在しない場合
 
-### Todo取得（ID指定）
+### findAll
 
-```typescript
-GET /api/trpc/todo.findById
+すべてのTodoを取得します。
 
-// リクエスト
-id: string  // Todo ID（必須）
+- **メソッド**: `query`
+- **入力**: なし
+- **戻り値**: `Todo[]`
 
-// レスポンス
-{
-  id: string;
-  title: string;
-  description?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-} | null  // Todoが見つからない場合はnull
-```
+### delete
 
-### Todo一覧取得
+指定されたTodoを削除します。
 
-```typescript
-GET /api/trpc/todo.findAll
-
-// リクエスト
-なし
-
-// レスポンス
-{
-  id: string;
-  title: string;
-  description?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-}[]
-```
-
-### Todo削除
-
-```typescript
-POST /api/trpc/todo.delete
-
-// リクエスト
-id: string  // Todo ID（必須）
-
-// レスポンス
-void  // 成功時は何も返さない
-```
+- **メソッド**: `mutation`
+- **入力**:
+  ```typescript
+  {
+    id: string;
+  }
+  ```
+- **戻り値**: `void`
+- **エラー**:
+  - `NOT_FOUND`: 指定されたIDのTodoが存在しない場合
 
 ## 型定義
 
 ### Todo
 
 ```typescript
+type TodoStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled';
+
 interface Todo {
   id: string;
   title: string;
@@ -146,25 +105,31 @@ interface Todo {
   updatedAt: Date;
   completedAt?: Date;
 }
-
-type TodoStatus = 'pending' | 'completed' | 'cancelled';
 ```
+
+### ステータス
+
+| ステータス | ラベル |
+|------------|--------|
+| pending | 未着手 |
+| in-progress | 進行中 |
+| completed | 完了 |
+| cancelled | キャンセル |
 
 ## エラーハンドリング
 
-各APIは以下のような形式でエラーを返します：
+APIは以下のエラーを返す可能性があります：
+
+- `NOT_FOUND`: リソースが見つからない
+- `BAD_REQUEST`: リクエストが不正
+- `INTERNAL_SERVER_ERROR`: サーバー内部エラー
+
+エラーレスポンスの形式：
 
 ```typescript
 {
-  error: {
-    message: string;  // エラーメッセージ
-    code: string;     // エラーコード
-  }
+  code: string;    // エラーコード
+  message: string; // エラーメッセージ
+  cause?: unknown; // エラーの原因（開発環境のみ）
 }
-```
-
-### 共通エラー
-
-- `NOT_FOUND`: リソースが見つからない
-- `INVALID_INPUT`: 入力値が不正
-- `INVALID_STATE`: 不正な状態遷移 
+``` 
