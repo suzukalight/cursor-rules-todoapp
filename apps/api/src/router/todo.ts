@@ -1,8 +1,7 @@
 import { ChangeTodoStatusUseCase, CreateTodoUseCase, DeleteTodoUseCase, FindTodoUseCase, type Todo, TodoNotFoundError, type TodoRepository, UpdateTodoUseCase } from '@cursor-rules-todoapp/domain';
-import { TRPCError, initTRPC } from '@trpc/server';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-
-const t = initTRPC.create();
+import { trpc } from './trpc';
 
 export const createTodoRouter = (todoRepository: TodoRepository) => {
   const createTodoUseCase = new CreateTodoUseCase(todoRepository);
@@ -11,8 +10,8 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
   const deleteTodoUseCase = new DeleteTodoUseCase(todoRepository);
   const findTodoUseCase = new FindTodoUseCase(todoRepository);
 
-  return t.router({
-    create: t.procedure
+  return trpc.router({
+    create: trpc.procedure
       .input(
         z.object({
           title: z.string().min(1),
@@ -23,7 +22,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         return createTodoUseCase.execute(input);
       }),
 
-    update: t.procedure
+    update: trpc.procedure
       .input(
         z.object({
           id: z.string(),
@@ -35,7 +34,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         return updateTodoUseCase.execute(input);
       }),
 
-    changeStatus: t.procedure
+    changeStatus: trpc.procedure
       .input(
         z.object({
           id: z.string(),
@@ -46,7 +45,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         return changeTodoStatusUseCase.execute(input);
       }),
 
-    findById: t.procedure
+    findById: trpc.procedure
       .input(z.string())
       .query(async ({ input }): Promise<Todo> => {
         try {
@@ -62,11 +61,11 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         }
       }),
 
-    findAll: t.procedure.query(async (): Promise<Todo[]> => {
+    findAll: trpc.procedure.query(async (): Promise<Todo[]> => {
       return findTodoUseCase.findAll();
     }),
 
-    delete: t.procedure
+    delete: trpc.procedure
       .input(
         z.object({
           id: z.string(),
