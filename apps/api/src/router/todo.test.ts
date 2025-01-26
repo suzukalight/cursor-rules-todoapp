@@ -83,11 +83,19 @@ describe('todoRouter', () => {
   describe('delete', () => {
     it('指定したTodoを削除できる', async () => {
       const todo = Todo.create({ title: 'test todo', status: 'pending' });
+      vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
       vi.spyOn(mockTodoRepository, 'delete').mockResolvedValueOnce();
 
-      await caller.delete(todo.id);
+      await caller.delete({ id: todo.id });
 
       expect(mockTodoRepository.delete).toHaveBeenCalledWith(todo.id);
+    });
+
+    it('存在しないTodoの場合はエラーを返す', async () => {
+      const id = 'non-existent-id';
+      vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(null);
+
+      await expect(caller.delete({ id })).rejects.toThrow('Todo not found');
     });
   });
 }); 

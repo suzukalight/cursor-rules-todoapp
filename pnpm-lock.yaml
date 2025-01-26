@@ -135,6 +135,10 @@ importers:
         version: 5.7.3
 
   packages/domain:
+    dependencies:
+      '@trpc/server':
+        specifier: ^11.0.0-next-beta.294
+        version: 11.0.0-rc.724(typescript@5.7.3)
     devDependencies:
       '@cursor-rules-todoapp/configs':
         specifier: workspace:*
