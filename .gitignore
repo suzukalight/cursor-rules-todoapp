@@ -44,4 +44,7 @@ Thumbs.db
 
 # Prisma
 *.db
-*.db-journal 
+*.db-journal
+
+# Storybook
+storybook-static/ 
