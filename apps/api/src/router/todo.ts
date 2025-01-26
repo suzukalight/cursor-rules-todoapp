@@ -1,4 +1,4 @@
-import { ChangeTodoStatusUseCase, CreateTodoUseCase, DeleteTodoUseCase, type Todo, TodoNotFoundError, type TodoRepository, UpdateTodoUseCase } from '@cursor-rules-todoapp/domain';
+import { ChangeTodoStatusUseCase, CreateTodoUseCase, DeleteTodoUseCase, FindTodoUseCase, type Todo, TodoNotFoundError, type TodoRepository, UpdateTodoUseCase } from '@cursor-rules-todoapp/domain';
 import { TRPCError, initTRPC } from '@trpc/server';
 import { z } from 'zod';
 
@@ -9,6 +9,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
   const updateTodoUseCase = new UpdateTodoUseCase(todoRepository);
   const changeTodoStatusUseCase = new ChangeTodoStatusUseCase(todoRepository);
   const deleteTodoUseCase = new DeleteTodoUseCase(todoRepository);
+  const findTodoUseCase = new FindTodoUseCase(todoRepository);
 
   return t.router({
     create: t.procedure
@@ -47,12 +48,22 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
 
     findById: t.procedure
       .input(z.string())
-      .query(async ({ input }): Promise<Todo | null> => {
-        return todoRepository.findById(input);
+      .query(async ({ input }): Promise<Todo> => {
+        try {
+          return await findTodoUseCase.findById(input);
+        } catch (error: unknown) {
+          if (error instanceof TodoNotFoundError) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: error.message,
+            });
+          }
+          throw error;
+        }
       }),
 
     findAll: t.procedure.query(async (): Promise<Todo[]> => {
-      return todoRepository.findAll();
+      return findTodoUseCase.findAll();
     }),
 
     delete: t.procedure
