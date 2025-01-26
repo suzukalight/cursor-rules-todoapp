@@ -33,28 +33,15 @@ describe('TodoRepository', () => {
       // ファイルが存在しない場合は無視
     }
 
-    try {
-      // テンプレートDBを作成
-      console.log('テンプレートDBを作成します...');
-      console.log('作成先:', TEMPLATE_DB_PATH);
-      console.log('カレントディレクトリ:', resolve(__dirname, '../..'));
+    // テンプレートDBを作成
+    execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" npx prisma db push --force-reset`, { 
+      cwd: resolve(__dirname, '../..'),
+      stdio: 'inherit',
+    });
 
-      execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" npx prisma db push --force-reset`, { 
-        cwd: resolve(__dirname, '../..'),
-        stdio: 'inherit',
-      });
-
-      // テンプレートDBが作成されたことを確認
-      if (!existsSync(TEMPLATE_DB_PATH)) {
-        console.error('テンプレートDBが作成されませんでした');
-        console.error('ファイルパス:', TEMPLATE_DB_PATH);
-        throw new Error('テンプレートDBの作成に失敗しました');
-      }
-
-      console.log('テンプレートDBの作成に成功しました');
-    } catch (e) {
-      console.error('テンプレートDBの作成中にエラーが発生しました:', e);
-      throw e;
+    // テンプレートDBが作成されたことを確認
+    if (!existsSync(TEMPLATE_DB_PATH)) {
+      throw new Error('テンプレートDBの作成に失敗しました');
     }
   });
 
