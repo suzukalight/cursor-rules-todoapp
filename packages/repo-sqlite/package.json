@@ -18,6 +18,7 @@
     "db:reset": "prisma migrate reset --force"
   },
   "dependencies": {
+    "@cursor-rules-todoapp/common": "workspace:*",
     "@cursor-rules-todoapp/domain": "workspace:*",
     "@prisma/client": "^5.22.0"
   },
