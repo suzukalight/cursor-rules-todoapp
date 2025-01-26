@@ -1,28 +1,24 @@
-import { Todo } from '@cursor-rules-todoapp/domain';
-import type { Todo as PrismaTodo } from '@prisma/client';
+import { Todo, type TodoStatus } from '@cursor-rules-todoapp/domain';
+import type { Prisma, Todo as PrismaTodo } from '@prisma/client';
 
 export const TodoMapper = {
-  toDomain(prismaModel: PrismaTodo): Todo {
-    return Todo.reconstruct({
-      id: prismaModel.id,
-      title: prismaModel.title,
-      description: prismaModel.description ?? undefined,
-      status: prismaModel.status as 'pending' | 'completed' | 'cancelled',
-      createdAt: prismaModel.createdAt,
-      updatedAt: prismaModel.updatedAt,
-      completedAt: prismaModel.completedAt ?? undefined,
-    });
+  toPrisma(todo: Todo): Prisma.TodoCreateInput {
+    return {
+      id: todo.id,
+      title: todo.title,
+      description: todo.description ?? undefined,
+      status: todo.status,
+    };
   },
 
-  toPrisma(domain: Todo): PrismaTodo {
-    return {
-      id: domain.id,
-      title: domain.title,
-      description: domain.description ?? null,
-      status: domain.status,
-      createdAt: domain.createdAt,
-      updatedAt: domain.updatedAt,
-      completedAt: domain.completedAt ?? null,
-    };
+  toDomain(todo: PrismaTodo): Todo {
+    return Todo.reconstruct({
+      id: todo.id,
+      title: todo.title,
+      description: todo.description ?? undefined,
+      status: todo.status as TodoStatus,
+      createdAt: todo.createdAt,
+      updatedAt: todo.updatedAt,
+    });
   },
 } as const; 

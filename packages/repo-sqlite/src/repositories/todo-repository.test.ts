@@ -1,26 +1,108 @@
+import { execSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { copyFileSync, existsSync, unlinkSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Todo } from '@cursor-rules-todoapp/domain';
 import { PrismaClient } from '@prisma/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { config } from 'dotenv';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TodoRepository } from './todo-repository';
+
+// テスト環境の設定を読み込む
+process.env.NODE_ENV = 'test';
+config({ path: resolve(__dirname, '../../.env.test') });
+
+const TEMPLATE_DB_PATH = resolve(__dirname, '../../template.db');
+
+// テストごとに一意のDBファイルを使用する
+function getTestDbPath() {
+  return resolve(__dirname, `../../test-${randomUUID()}.db`);
+}
 
 describe('TodoRepository', () => {
   let prisma: PrismaClient;
   let repository: TodoRepository;
+  let testDbPath: string;
+
+  beforeAll(async () => {
+    // 既存のDBを削除
+    try {
+      unlinkSync(TEMPLATE_DB_PATH);
+      unlinkSync(`${TEMPLATE_DB_PATH}-journal`);
+    } catch {
+      // ファイルが存在しない場合は無視
+    }
+
+    try {
+      // テンプレートDBを作成
+      console.log('テンプレートDBを作成します...');
+      console.log('作成先:', TEMPLATE_DB_PATH);
+      console.log('カレントディレクトリ:', resolve(__dirname, '../..'));
+
+      execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" npx prisma db push --force-reset`, { 
+        cwd: resolve(__dirname, '../..'),
+        stdio: 'inherit',
+      });
+
+      // テンプレートDBが作成されたことを確認
+      if (!existsSync(TEMPLATE_DB_PATH)) {
+        console.error('テンプレートDBが作成されませんでした');
+        console.error('ファイルパス:', TEMPLATE_DB_PATH);
+        throw new Error('テンプレートDBの作成に失敗しました');
+      }
+
+      console.log('テンプレートDBの作成に成功しました');
+    } catch (e) {
+      console.error('テンプレートDBの作成中にエラーが発生しました:', e);
+      throw e;
+    }
+  });
+
+  afterAll(async () => {
+    // テンプレートDBを削除
+    try {
+      unlinkSync(TEMPLATE_DB_PATH);
+      unlinkSync(`${TEMPLATE_DB_PATH}-journal`);
+    } catch {
+      // ファイルが存在しない場合は無視
+    }
+  });
 
   beforeEach(async () => {
-    prisma = new PrismaClient();
+    // テストごとに一意のDBパスを生成
+    testDbPath = getTestDbPath();
+
+    // テンプレートDBをテスト用にコピー
+    copyFileSync(TEMPLATE_DB_PATH, testDbPath);
+
+    // テスト用DBに接続
+    prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: `file:${testDbPath}`,
+        },
+      },
+    });
     repository = new TodoRepository(prisma);
 
-    // クリーンアップ
+    // データベースをクリーンアップ
     await prisma.todo.deleteMany();
   });
 
   afterEach(async () => {
     await prisma.$disconnect();
+
+    // テストDBを削除
+    try {
+      unlinkSync(testDbPath);
+      unlinkSync(`${testDbPath}-journal`);
+    } catch {
+      // ファイルが存在しない場合は無視
+    }
   });
 
   describe('save', () => {
-    it('should create a new todo', async () => {
+    it('新しいTodoを作成できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
         description: 'Test Description',
@@ -39,7 +121,7 @@ describe('TodoRepository', () => {
       expect(saved?.status).toBe('pending');
     });
 
-    it('should update an existing todo', async () => {
+    it('既存のTodoを更新できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
         status: 'pending',
@@ -58,12 +140,12 @@ describe('TodoRepository', () => {
   });
 
   describe('findById', () => {
-    it('should return null for non-existent todo', async () => {
+    it('存在しないTodoの場合はnullを返す', async () => {
       const result = await repository.findById('non-existent-id');
       expect(result).toBeNull();
     });
 
-    it('should find an existing todo', async () => {
+    it('既存のTodoを取得できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
         status: 'pending',
@@ -79,7 +161,7 @@ describe('TodoRepository', () => {
   });
 
   describe('findAll', () => {
-    it('should return all todos', async () => {
+    it('全てのTodoを取得できる', async () => {
       const todo1 = Todo.create({
         title: 'Todo 1',
         status: 'pending',
@@ -101,7 +183,7 @@ describe('TodoRepository', () => {
   });
 
   describe('delete', () => {
-    it('should delete a todo', async () => {
+    it('Todoを削除できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
         status: 'pending',
@@ -119,13 +201,13 @@ describe('TodoRepository', () => {
   });
 
   describe('transaction', () => {
-    it('should handle successful transaction', async () => {
-      const result = await repository.transaction(async () => {
+    it('トランザクションが成功する場合、変更が保存される', async () => {
+      const result = await repository.transaction(async function(this: TodoRepository) {
         const todo = Todo.create({
           title: 'Transaction Todo',
           status: 'pending',
         });
-        await repository.save(todo);
+        await this.save(todo);
         return todo;
       });
 
@@ -136,7 +218,7 @@ describe('TodoRepository', () => {
       expect(saved?.title).toBe('Transaction Todo');
     });
 
-    it('should rollback on error', async () => {
+    it('トランザクションがエラーの場合、ロールバックされる', async () => {
       const todo = Todo.create({
         title: 'Pre-transaction Todo',
         status: 'pending',
@@ -144,8 +226,8 @@ describe('TodoRepository', () => {
       await repository.save(todo);
 
       try {
-        await repository.transaction(async () => {
-          await repository.delete(todo.id);
+        await repository.transaction(async function(this: TodoRepository) {
+          await this.delete(todo.id);
           throw new Error('Test error');
         });
       } catch (_error) {
