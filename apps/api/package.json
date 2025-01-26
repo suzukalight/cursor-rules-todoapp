@@ -16,7 +16,9 @@
   "dependencies": {
     "@cursor-rules-todoapp/domain": "workspace:*",
     "@cursor-rules-todoapp/repo-sqlite": "workspace:*",
+    "@prisma/client": "^5.22.0",
     "@trpc/server": "^10.45.0",
+    "@types/node": "^22.10.10",
     "cors": "^2.8.5",
     "express": "^4.18.3",
     "tsx": "^4.7.1",
