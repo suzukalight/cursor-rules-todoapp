@@ -8,33 +8,24 @@ import { TodoFilter } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
 import { api } from '../utils/api';
 
-interface TodoEntity {
-  props?: {
-    id: string;
-    title: string;
-    description: string;
-    status: TodoStatus;
-    createdAt: string;
-    updatedAt: string;
-    completedAt?: string;
-  };
-  id?: string;
-  title?: string;
+type TodoResponse = {
+  id: string;
+  title: string;
   description?: string;
-  status?: TodoStatus;
-  createdAt?: string;
-  updatedAt?: string;
+  status: TodoStatus;
+  createdAt: string;
+  updatedAt: string;
   completedAt?: string;
-}
+};
 
-const convertDates = (todo: TodoEntity): Todo => ({
-  id: todo.props?.id ?? todo.id ?? '',
-  title: todo.props?.title ?? todo.title ?? '',
-  description: todo.props?.description ?? todo.description ?? '',
-  status: todo.props?.status ?? todo.status ?? 'pending',
-  createdAt: new Date(todo.props?.createdAt ?? todo.createdAt ?? ''),
-  updatedAt: new Date(todo.props?.updatedAt ?? todo.updatedAt ?? ''),
-  completedAt: todo.props?.completedAt ? new Date(todo.props.completedAt) : undefined,
+const convertDates = (todo: TodoResponse): Todo => ({
+  id: todo.id,
+  title: todo.title,
+  description: todo.description,
+  status: todo.status,
+  createdAt: new Date(todo.createdAt),
+  updatedAt: new Date(todo.updatedAt),
+  completedAt: todo.completedAt ? new Date(todo.completedAt) : undefined,
 });
 
 export default function TodoPage() {
