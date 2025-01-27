@@ -1,6 +1,8 @@
-# Cursor Rules Todo App
+# .cursorrules だけでアプリを作成できるか？
 
-Next.js + TRPCを使用したモノレポ構成のTodoアプリケーション
+[.cursorrules](./.cursorrules) と [Cursor Composer Agent](https://www.cursor.com/features) だけで TODO アプリを作成できるかを検証するためのプロジェクトです。
+
+すべてのコードは Composer Agent とのやりとりのみで生成されています。私が書いたのは `.cursorrules` と `README.md` の序文のみで、それ以外のコードやドキュメントはすべて Composer Agent が生成しています。
 
 ## 技術スタック
 
@@ -28,14 +30,10 @@ cd packages/repo-sqlite
 # 環境変数の設定
 cp .env.example .env
 
-# Prismaクライアントの生成
-pnpm prisma generate
-
-# データベースのマイグレーション
-pnpm prisma migrate dev
-
-# （オプション）シードデータの投入
-pnpm prisma db seed
+# データベースのセットアップ
+pnpm db:generate  # Prismaクライアントの生成
+pnpm db:migrate   # マイグレーションの実行
+pnpm db:reset    # （必要な場合）データベースのリセット
 
 # プロジェクトルートに戻る
 cd ../..
@@ -46,6 +44,9 @@ cd ../..
 ```bash
 # 依存関係のインストール
 pnpm install
+
+# パッケージのビルド（重要）
+pnpm build
 
 # 開発サーバーの起動
 pnpm dev
