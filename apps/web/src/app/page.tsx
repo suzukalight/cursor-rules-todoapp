@@ -152,9 +152,9 @@ export default function TodoPage() {
     <main className="container mx-auto p-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold dark:text-gray-100">Todo List</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button onClick={handleCreateTodo}>
+          <Button onClick={handleCreateTodo} className="h-8 rounded-lg">
             <Plus className="mr-2 h-4 w-4" />
             新規作成
           </Button>

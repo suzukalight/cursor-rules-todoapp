@@ -20,7 +20,7 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus }: TodoCardProps)
   };
 
   return (
-    <Card>
+    <Card className="rounded-lg">
       <CardHeader>
         <h3 className="text-lg font-semibold">
           {isEditing ? (
@@ -29,7 +29,7 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus }: TodoCardProps)
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded-lg"
                 onFocus={(e) => e.target.select()}
               />
             </form>
@@ -58,6 +58,7 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus }: TodoCardProps)
             size="sm"
             onClick={() => onUpdateStatus(todo.id, 'completed')}
             disabled={todo.status === 'completed'}
+            className="rounded-lg"
           >
             <Check className="h-4 w-4" />
           </Button>
@@ -66,6 +67,7 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus }: TodoCardProps)
             size="sm"
             onClick={() => onUpdateStatus(todo.id, 'in-progress')}
             disabled={todo.status === 'in-progress'}
+            className="rounded-lg"
           >
             <X className="h-4 w-4" />
           </Button>
