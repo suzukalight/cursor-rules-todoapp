@@ -4,6 +4,7 @@ import type { Todo, TodoStatus } from '@cursor-rules-todoapp/common';
 import { Button } from '@cursor-rules-todoapp/ui';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ThemeToggle } from '../components/theme/theme-toggle';
 import { TodoFilter } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
 import { trpc } from '../utils/api';
@@ -150,11 +151,14 @@ export default function TodoPage() {
   return (
     <main className="container mx-auto p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Todo List</h1>
-        <Button onClick={handleCreateTodo}>
-          <Plus className="mr-2 h-4 w-4" />
-          新規作成
-        </Button>
+        <h1 className="text-2xl font-bold dark:text-gray-100">Todo List</h1>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button onClick={handleCreateTodo} className="h-8 rounded-lg">
+            <Plus className="mr-2 h-4 w-4" />
+            新規作成
+          </Button>
+        </div>
       </div>
 
       <TodoFilter
