@@ -1,91 +1,30 @@
-import { execSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
-import { copyFileSync, existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Todo } from '@cursor-rules-todoapp/domain';
-import { PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { TestDatabase } from '../test-utils/database';
 import { TodoRepository } from './todo-repository';
 
 // テスト環境の設定を読み込む
 process.env.NODE_ENV = 'test';
 config({ path: resolve(__dirname, '../../.env.test') });
 
-const TEMPLATE_DB_PATH = resolve(__dirname, '../../template.db');
-
-// テストごとに一意のDBファイルを使用する
-function getTestDbPath() {
-  return resolve(__dirname, `../../test-${randomUUID()}.db`);
-}
-
 describe('TodoRepository', () => {
-  let prisma: PrismaClient;
+  let testDb: TestDatabase;
   let repository: TodoRepository;
-  let testDbPath: string;
 
   beforeAll(async () => {
-    // 既存のDBを削除
-    try {
-      unlinkSync(TEMPLATE_DB_PATH);
-      unlinkSync(`${TEMPLATE_DB_PATH}-journal`);
-    } catch {
-      // ファイルが存在しない場合は無視
-    }
-
-    // テンプレートDBを作成
-    execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" npx prisma db push --force-reset`, { 
-      cwd: resolve(__dirname, '../..'),
-      stdio: 'inherit',
-    });
-
-    // テンプレートDBが作成されたことを確認
-    if (!existsSync(TEMPLATE_DB_PATH)) {
-      throw new Error('テンプレートDBの作成に失敗しました');
-    }
-  });
-
-  afterAll(async () => {
-    // テンプレートDBを削除
-    try {
-      unlinkSync(TEMPLATE_DB_PATH);
-      unlinkSync(`${TEMPLATE_DB_PATH}-journal`);
-    } catch {
-      // ファイルが存在しない場合は無視
-    }
+    await TestDatabase.initialize();
   });
 
   beforeEach(async () => {
-    // テストごとに一意のDBパスを生成
-    testDbPath = getTestDbPath();
-
-    // テンプレートDBをテスト用にコピー
-    copyFileSync(TEMPLATE_DB_PATH, testDbPath);
-
-    // テスト用DBに接続
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: `file:${testDbPath}`,
-        },
-      },
-    });
-    repository = new TodoRepository(prisma);
-
-    // データベースをクリーンアップ
-    await prisma.todo.deleteMany();
+    testDb = new TestDatabase();
+    await testDb.setup();
+    repository = new TodoRepository(testDb.client);
   });
 
   afterEach(async () => {
-    await prisma.$disconnect();
-
-    // テストDBを削除
-    try {
-      unlinkSync(testDbPath);
-      unlinkSync(`${testDbPath}-journal`);
-    } catch {
-      // ファイルが存在しない場合は無視
-    }
+    await testDb.cleanup();
   });
 
   describe('save', () => {
@@ -98,7 +37,7 @@ describe('TodoRepository', () => {
 
       await repository.save(todo);
 
-      const saved = await prisma.todo.findUnique({
+      const saved = await testDb.client.todo.findUnique({
         where: { id: todo.id },
       });
 
@@ -118,7 +57,7 @@ describe('TodoRepository', () => {
       todo.updateTitle('Updated Title');
       await repository.save(todo);
 
-      const updated = await prisma.todo.findUnique({
+      const updated = await testDb.client.todo.findUnique({
         where: { id: todo.id },
       });
 
@@ -179,7 +118,7 @@ describe('TodoRepository', () => {
       await repository.save(todo);
       await repository.delete(todo.id);
 
-      const deleted = await prisma.todo.findUnique({
+      const deleted = await testDb.client.todo.findUnique({
         where: { id: todo.id },
       });
 
@@ -198,7 +137,7 @@ describe('TodoRepository', () => {
         return todo;
       });
 
-      const saved = await prisma.todo.findUnique({
+      const saved = await testDb.client.todo.findUnique({
         where: { id: result.id },
       });
       expect(saved).not.toBeNull();
@@ -221,7 +160,7 @@ describe('TodoRepository', () => {
         // エラーは期待通り
       }
 
-      const stillExists = await prisma.todo.findUnique({
+      const stillExists = await testDb.client.todo.findUnique({
         where: { id: todo.id },
       });
       expect(stillExists).not.toBeNull();
