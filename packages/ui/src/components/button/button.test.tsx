@@ -4,31 +4,34 @@ import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Button } from './button';
+import { cn } from '../../lib/utils';
+import { Button, buttonVariants } from './button';
 
 describe('Button', () => {
   it('正しくレンダリングされる', () => {
     render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toBeInTheDocument();
-    expect(screen.getByText('Click me')).toBeInTheDocument();
+    const button = screen.getByRole('button');
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveClass(cn(buttonVariants({ variant: 'default', size: 'default' })));
+    expect(button).toHaveTextContent('Click me');
   });
 
   it('デフォルトのバリアントスタイルが適用される', () => {
     render(<Button>Default Button</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-primary');
+    expect(button).toHaveClass(cn(buttonVariants({ variant: 'default' })));
   });
 
   it('カスタムバリアントスタイルが適用される', () => {
     render(<Button variant="secondary">Secondary Button</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-secondary');
+    expect(button).toHaveClass(cn(buttonVariants({ variant: 'secondary' })));
   });
 
   it('サイズスタイルが適用される', () => {
     render(<Button size="lg">Large Button</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('h-10');
+    expect(button).toHaveClass(cn(buttonVariants({ size: 'lg' })));
   });
 
   it('クリックイベントを処理できる', async () => {
@@ -56,6 +59,7 @@ describe('Button', () => {
     const link = screen.getByRole('link');
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/');
+    expect(link).toHaveClass(cn(buttonVariants()));
   });
 
   it('アクセシビリティに対応している', () => {
@@ -68,6 +72,6 @@ describe('Button', () => {
     render(<Button disabled>Disabled Button</Button>);
     const button = screen.getByRole('button');
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('disabled:opacity-50');
+    expect(button).toHaveClass('disabled:pointer-events-none', 'disabled:opacity-50');
   });
 }); 
