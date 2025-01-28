@@ -65,6 +65,15 @@
 - テストコードは、テスト対象と同じディレクトリに保存してください
 - `__tests__` ディレクトリなどは作成しないでください
 
+### テスト環境の設定
+
+- `@testing-library/jest-dom`は`import '@testing-library/jest-dom'`の形式でインポート
+- ブラウザAPIを使用する場合は、適切なモックを`vitest.setup.ts`に実装
+  - 例：`window.matchMedia`のモック
+- Vitestの設定は最小限に留め、複雑な設定は避ける
+  - 例：`pool`や`poolOptions`などの高度な設定は使用しない
+- テストの実行時間を定期的に監視し、パフォーマンスの低下があれば対処
+
 ## アーキテクチャ要件
 
 ### Clean Architecture
