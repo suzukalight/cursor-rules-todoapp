@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2017",
+    "types": ["node", "@playwright/test"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@cursor-rules-todoapp/*": ["../../packages/*/src"]
+    }
+  },
+  "include": ["e2e/**/*.ts"],
+  "exclude": ["node_modules"]
+} 
