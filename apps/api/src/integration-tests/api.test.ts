@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { afterAll, beforeAll, beforeEach, afterEach, describe, expect, it } from 'vitest';
 import express from 'express';
 import type { Server } from 'node:http';
