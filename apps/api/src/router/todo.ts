@@ -19,7 +19,6 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         })
       )
       .mutation(async ({ input }): Promise<Todo> => {
-        console.log('Create Todo Handler:', { input });
         return createTodoUseCase.execute(input);
       }),
 

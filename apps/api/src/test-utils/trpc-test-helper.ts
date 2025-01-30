@@ -30,6 +30,7 @@ export class TRPCTestHelper {
    */
   private log(message: string, data: unknown) {
     if (this.debug) {
+      // biome-ignore lint/suspicious/noConsoleLog: テストのデバッグ用途のため許容
       console.log(message, data);
     }
   }
@@ -129,3 +130,4 @@ export class TRPCTestHelper {
     }
   }
 } 
+
