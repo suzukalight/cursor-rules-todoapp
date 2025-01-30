@@ -19,6 +19,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         })
       )
       .mutation(async ({ input }): Promise<Todo> => {
+        console.log('Create Todo Handler:', { input });
         return createTodoUseCase.execute(input);
       }),
 
@@ -31,6 +32,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
         })
       )
       .mutation(async ({ input }): Promise<Todo> => {
+        console.log('Update Todo Handler:', { input });
         return updateTodoUseCase.execute(input);
       }),
 
@@ -48,6 +50,7 @@ export const createTodoRouter = (todoRepository: TodoRepository) => {
     findById: trpc.procedure
       .input(z.string())
       .query(async ({ input }): Promise<Todo> => {
+        console.log('Find Todo Handler:', { input });
         try {
           return await findTodoUseCase.findById(input);
         } catch (error: unknown) {
