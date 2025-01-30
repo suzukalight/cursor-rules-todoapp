@@ -13,4 +13,4 @@ export const trpcClient = trpc.createClient({
       url: 'http://localhost:3001/trpc',
     }),
   ],
-}); 
+});

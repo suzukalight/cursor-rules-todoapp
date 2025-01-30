@@ -73,4 +73,4 @@ describe('Card', () => {
     expect(screen.getByText('段落2')).toBeInTheDocument();
     expect(screen.getByText('アクション')).toBeInTheDocument();
   });
-}); 
+});

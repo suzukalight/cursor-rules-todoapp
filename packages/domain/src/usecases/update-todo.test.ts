@@ -20,9 +20,11 @@ describe('UpdateTodoUseCase', () => {
 
     await useCase.execute({ id: todo.id, title: 'new title' });
 
-    expect(mockTodoRepository.save).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'new title',
-    }));
+    expect(mockTodoRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'new title',
+      })
+    );
   });
 
   it('説明を更新できる', async () => {
@@ -31,15 +33,18 @@ describe('UpdateTodoUseCase', () => {
 
     await useCase.execute({ id: todo.id, description: 'new description' });
 
-    expect(mockTodoRepository.save).toHaveBeenCalledWith(expect.objectContaining({
-      description: 'new description',
-    }));
+    expect(mockTodoRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: 'new description',
+      })
+    );
   });
 
   it('存在しないTodoの場合はエラーを返す', async () => {
     vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(null);
 
-    await expect(useCase.execute({ id: 'non-existent-id', title: 'new title' }))
-      .rejects.toThrow('Todo not found');
+    await expect(useCase.execute({ id: 'non-existent-id', title: 'new title' })).rejects.toThrow(
+      'Todo not found'
+    );
   });
-}); 
+});

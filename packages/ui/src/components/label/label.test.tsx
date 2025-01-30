@@ -42,4 +42,4 @@ describe('Label', () => {
     const label = screen.getByText('無効化されたラベル');
     expect(label).toHaveClass('peer-disabled:opacity-70');
   });
-}); 
+});

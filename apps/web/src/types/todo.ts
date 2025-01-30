@@ -12,4 +12,4 @@ export interface TodoResponse {
   };
 }
 
-export type TodoListResponse = TodoResponse[]; 
+export type TodoListResponse = TodoResponse[];

@@ -1,13 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
 describe('Select', () => {
   it('正しくレンダリングされる', () => {
@@ -20,7 +14,7 @@ describe('Select', () => {
           <SelectItem value="1">オプション1</SelectItem>
           <SelectItem value="2">オプション2</SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
@@ -37,9 +31,9 @@ describe('Select', () => {
           <SelectItem value="1">オプション1</SelectItem>
           <SelectItem value="2">オプション2</SelectItem>
         </SelectContent>
-      </Select>,
+      </Select>
     );
 
     expect(screen.getByRole('combobox')).toBeDisabled();
   });
-}); 
+});

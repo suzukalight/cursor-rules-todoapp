@@ -12,4 +12,4 @@ export class DeleteTodoUseCase {
 
     await this.todoRepository.delete(id);
   }
-} 
+}

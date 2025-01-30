@@ -44,4 +44,4 @@ export const DisabledChecked: Story = {
 
 export const WithoutLabel: Story = {
   args: {},
-}; 
+};

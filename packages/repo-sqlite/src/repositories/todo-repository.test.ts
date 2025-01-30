@@ -103,8 +103,8 @@ describe('TodoRepository', () => {
 
       const todos = await repository.findAll();
       expect(todos).toHaveLength(2);
-      expect(todos.map(t => t.title)).toContain('Todo 1');
-      expect(todos.map(t => t.title)).toContain('Todo 2');
+      expect(todos.map((t) => t.title)).toContain('Todo 1');
+      expect(todos.map((t) => t.title)).toContain('Todo 2');
     });
   });
 
@@ -128,7 +128,7 @@ describe('TodoRepository', () => {
 
   describe('transaction', () => {
     it('トランザクションが成功する場合、変更が保存される', async () => {
-      const result = await repository.transaction(async function(this: TodoRepository) {
+      const result = await repository.transaction(async function (this: TodoRepository) {
         const todo = Todo.create({
           title: 'Transaction Todo',
           status: 'pending',
@@ -152,7 +152,7 @@ describe('TodoRepository', () => {
       await repository.save(todo);
 
       try {
-        await repository.transaction(async function(this: TodoRepository) {
+        await repository.transaction(async function (this: TodoRepository) {
           await this.delete(todo.id);
           throw new Error('Test error');
         });
@@ -166,4 +166,4 @@ describe('TodoRepository', () => {
       expect(stillExists).not.toBeNull();
     });
   });
-}); 
+});

@@ -19,4 +19,4 @@ export function ThemeToggle() {
       <span className="sr-only">テーマを切り替える</span>
     </Button>
   );
-} 
+}

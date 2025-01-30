@@ -19,4 +19,4 @@ export class CreateTodoUseCase {
     await this.todoRepository.save(todo);
     return todo;
   }
-} 
+}

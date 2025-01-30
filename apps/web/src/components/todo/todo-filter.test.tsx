@@ -53,4 +53,4 @@ describe('TodoFilterコンポーネント', () => {
 
     expect(mockOnSortByChange).toHaveBeenCalledWith('updatedAt');
   });
-}); 
+});

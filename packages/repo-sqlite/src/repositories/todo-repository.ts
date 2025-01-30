@@ -36,12 +36,15 @@ export class TodoRepository implements ITodoRepository {
   }
 
   async transaction<T>(operation: () => Promise<T>): Promise<T> {
-    return await this.prisma.$transaction(async (tx) => {
-      const tempRepo = new TodoRepository(tx as unknown as PrismaClient);
-      return await operation.call(tempRepo);
-    }, {
-      timeout: 10000, // 10秒
-      maxWait: 5000,  // 5秒
-    });
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const tempRepo = new TodoRepository(tx as unknown as PrismaClient);
+        return await operation.call(tempRepo);
+      },
+      {
+        timeout: 10000, // 10秒
+        maxWait: 5000, // 5秒
+      }
+    );
   }
-} 
+}

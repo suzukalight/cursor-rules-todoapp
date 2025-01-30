@@ -21,4 +21,4 @@ export const TodoMapper = {
       updatedAt: todo.updatedAt,
     });
   },
-} as const; 
+} as const;

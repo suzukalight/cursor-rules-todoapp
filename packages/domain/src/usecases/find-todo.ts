@@ -16,4 +16,4 @@ export class FindTodoUseCase {
   async findAll(): Promise<Todo[]> {
     return this.todoRepository.findAll();
   }
-} 
+}

@@ -40,4 +40,4 @@ export const WithHtmlFor: Story = {
       </div>
     ),
   ],
-}; 
+};

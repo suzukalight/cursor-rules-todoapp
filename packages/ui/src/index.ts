@@ -15,4 +15,4 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from './components/select/select'; 
+} from './components/select/select';
