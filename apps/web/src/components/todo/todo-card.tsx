@@ -14,7 +14,12 @@ interface TodoCardProps {
   'data-testid'?: string;
 }
 
-export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': testId }: TodoCardProps) => {
+export const TodoCard = ({
+  todo,
+  onUpdateTitle,
+  onUpdateStatus,
+  'data-testid': testId,
+}: TodoCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(todo.title);
 
@@ -47,8 +52,8 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
         duration: 0.4,
         scale: {
           times: [0, 0.2, 1],
-          ease: "easeOut"
-        }
+          ease: 'easeOut',
+        },
       }}
     >
       <Card
@@ -90,10 +95,7 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
 
         {todo.description && (
           <CardContent>
-            <p className={cn(
-              'text-gray-600 dark:text-gray-400',
-              isCompleted && 'line-through'
-            )}>
+            <p className={cn('text-gray-600 dark:text-gray-400', isCompleted && 'line-through')}>
               {todo.description}
             </p>
           </CardContent>
@@ -103,14 +105,17 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
           <div className="flex gap-2">
             <div>
               <MotionButton
-                variant={isCompleted ? "secondary" : "outline"}
+                variant={isCompleted ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={() => onUpdateStatus(todo.id, 'completed')}
-                onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) => handleKeyDown(e, () => onUpdateStatus(todo.id, 'completed'))}
+                onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) =>
+                  handleKeyDown(e, () => onUpdateStatus(todo.id, 'completed'))
+                }
                 disabled={isCompleted}
                 className={cn(
                   'rounded-lg transition-colors duration-200',
-                  isCompleted && 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                  isCompleted &&
+                    'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
                 )}
                 aria-label={isCompleted ? 'タスク完了済み' : 'タスクを完了にする'}
                 whileTap={{ scale: 0.9 }}
@@ -125,9 +130,9 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
                       exit={{ scale: 0, rotate: 180 }}
                       transition={{
                         duration: 0.3,
-                        ease: "easeOut",
+                        ease: 'easeOut',
                         scale: { duration: 0.2 },
-                        rotate: { duration: 0.3 }
+                        rotate: { duration: 0.3 },
                       }}
                     >
                       <Check className="h-4 w-4" />
@@ -151,10 +156,14 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
                 variant="outline"
                 size="sm"
                 onClick={() => onUpdateStatus(todo.id, 'in-progress')}
-                onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) => handleKeyDown(e, () => onUpdateStatus(todo.id, 'in-progress'))}
+                onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) =>
+                  handleKeyDown(e, () => onUpdateStatus(todo.id, 'in-progress'))
+                }
                 disabled={todo.status === 'in-progress'}
                 className="rounded-lg"
-                aria-label={todo.status === 'in-progress' ? '進行中のタスク' : 'タスクを進行中にする'}
+                aria-label={
+                  todo.status === 'in-progress' ? '進行中のタスク' : 'タスクを進行中にする'
+                }
                 whileTap={{ scale: 0.9 }}
                 whileHover={{ scale: 1.1 }}
               >
@@ -170,4 +179,4 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
       </Card>
     </motion.div>
   );
-}; 
+};

@@ -74,4 +74,4 @@ export class TestDatabase {
   getDatabaseUrl() {
     return `file:${this.dbPath}`;
   }
-} 
+}

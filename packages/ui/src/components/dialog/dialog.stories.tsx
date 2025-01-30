@@ -33,8 +33,7 @@ export const Default: Story = {
         <DialogHeader>
           <DialogTitle>Dialog Title</DialogTitle>
           <DialogDescription>
-            This is a description of the dialog content. You can add any text or
-            components here.
+            This is a description of the dialog content. You can add any text or components here.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -100,8 +99,8 @@ export const WithAlert: Story = {
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your account
-            and remove your data from our servers.
+            This action cannot be undone. This will permanently delete your account and remove your
+            data from our servers.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -111,4 +110,4 @@ export const WithAlert: Story = {
       </DialogContent>
     </Dialog>
   ),
-}; 
+};

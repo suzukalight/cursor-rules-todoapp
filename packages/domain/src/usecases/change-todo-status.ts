@@ -31,4 +31,4 @@ export class ChangeTodoStatusUseCase {
     await this.todoRepository.save(todo);
     return todo;
   }
-} 
+}

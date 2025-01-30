@@ -101,19 +101,25 @@ export const TodoFilter = ({
           <SelectTrigger className="w-[180px] bg-white dark:bg-gray-700 dark:text-gray-100 border-gray-200 dark:border-gray-600 rounded-lg">
             <SelectValue placeholder="並び替え" />
           </SelectTrigger>
-          <SelectContent 
+          <SelectContent
             className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 min-w-[180px] rounded-lg"
             align="start"
             sideOffset={4}
           >
             <div className="py-1">
-              <SelectItem className="relative rounded-lg text-gray-900 dark:text-gray-100 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-600 py-2.5" value="createdAt">
+              <SelectItem
+                className="relative rounded-lg text-gray-900 dark:text-gray-100 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-600 py-2.5"
+                value="createdAt"
+              >
                 <span className="absolute left-1.5">
                   <span className="sr-only">選択済み</span>
                 </span>
                 <span className="pl-5">作成日</span>
               </SelectItem>
-              <SelectItem className="relative rounded-lg text-gray-900 dark:text-gray-100 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-600 py-2.5" value="updatedAt">
+              <SelectItem
+                className="relative rounded-lg text-gray-900 dark:text-gray-100 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-600 py-2.5"
+                value="updatedAt"
+              >
                 <span className="absolute left-1.5">
                   <span className="sr-only">選択済み</span>
                 </span>
@@ -125,4 +131,4 @@ export const TodoFilter = ({
       </div>
     </div>
   );
-}; 
+};

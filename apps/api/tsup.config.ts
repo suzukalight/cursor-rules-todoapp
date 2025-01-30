@@ -9,4 +9,4 @@ export default defineConfig({
   clean: true,
   target: 'es2019',
   external: ['@prisma/client'],
-}); 
+});

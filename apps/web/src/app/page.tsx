@@ -29,7 +29,7 @@ export default function TodoPage() {
 
   useEffect(() => {
     if (todoData) {
-      const convertedTodos = todoData.map(todo => {
+      const convertedTodos = todoData.map((todo) => {
         const data = ('props' in todo ? todo.props : todo) as TodoData;
         return {
           id: data.id,
@@ -73,9 +73,7 @@ export default function TodoPage() {
         updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
         completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
       };
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo))
-      );
+      setTodos((prev) => prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo)));
     },
   });
 
@@ -91,9 +89,7 @@ export default function TodoPage() {
         updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
         completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
       };
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo))
-      );
+      setTodos((prev) => prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo)));
     },
   });
 

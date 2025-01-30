@@ -37,10 +37,10 @@ describe('Button', () => {
   it('クリックイベントを処理できる', async () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     const button = screen.getByRole('button');
     await userEvent.click(button);
-    
+
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
@@ -74,4 +74,4 @@ describe('Button', () => {
     expect(button).toBeDisabled();
     expect(button).toHaveClass('disabled:pointer-events-none', 'disabled:opacity-50');
   });
-}); 
+});

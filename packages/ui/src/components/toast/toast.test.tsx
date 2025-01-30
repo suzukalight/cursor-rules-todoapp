@@ -9,4 +9,4 @@ describe('Toast', () => {
     // テストは一時的に無効化されています
     // 詳細は docs/testing/toast.md を参照してください
   });
-}); 
+});

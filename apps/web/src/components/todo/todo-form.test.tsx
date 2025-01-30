@@ -6,7 +6,7 @@ import { TodoForm } from './todo-form';
 describe('TodoForm', () => {
   it('フォームを表示できる', () => {
     render(<TodoForm />);
-    
+
     expect(screen.getByLabelText('タイトル')).toBeInTheDocument();
     expect(screen.getByLabelText('説明')).toBeInTheDocument();
     expect(screen.getByText('Todoを作成')).toBeInTheDocument();
@@ -20,7 +20,7 @@ describe('TodoForm', () => {
     });
 
     render(<TodoForm />);
-    
+
     const titleInput = screen.getByLabelText('タイトル') as HTMLInputElement;
     const descriptionInput = screen.getByLabelText('説明') as HTMLTextAreaElement;
     const submitButton = screen.getByText('Todoを作成');
@@ -40,17 +40,19 @@ describe('TodoForm', () => {
   it('送信後にフォームをリセットする', async () => {
     const onSuccess = vi.fn();
     let mutationCallback: () => void = () => {};
-    
-    vi.spyOn(api.todo.create, 'useMutation').mockImplementation(({ onSuccess: callback }: { onSuccess: () => void }) => {
-      mutationCallback = callback;
-      return {
-        mutate: vi.fn(),
-        isLoading: false,
-      };
-    });
+
+    vi.spyOn(api.todo.create, 'useMutation').mockImplementation(
+      ({ onSuccess: callback }: { onSuccess: () => void }) => {
+        mutationCallback = callback;
+        return {
+          mutate: vi.fn(),
+          isLoading: false,
+        };
+      }
+    );
 
     render(<TodoForm onSuccess={onSuccess} />);
-    
+
     const titleInput = screen.getByLabelText('タイトル') as HTMLInputElement;
     const descriptionInput = screen.getByLabelText('説明') as HTMLTextAreaElement;
 
@@ -73,8 +75,8 @@ describe('TodoForm', () => {
     });
 
     render(<TodoForm />);
-    
+
     const submitButton = screen.getByText('作成中...');
     expect(submitButton).toBeDisabled();
   });
-}); 
+});

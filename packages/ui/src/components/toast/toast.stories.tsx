@@ -46,9 +46,7 @@ export const Success: Story = {
     <ToastProvider>
       <Toast variant="success">
         <ToastTitle>Successfully saved!</ToastTitle>
-        <ToastDescription>
-          Your changes have been saved successfully.
-        </ToastDescription>
+        <ToastDescription>Your changes have been saved successfully.</ToastDescription>
       </Toast>
     </ToastProvider>
   ),
@@ -59,9 +57,7 @@ export const ErrorToast: Story = {
     <ToastProvider>
       <Toast variant="error">
         <ToastTitle>Error occurred</ToastTitle>
-        <ToastDescription>
-          There was a problem with your request.
-        </ToastDescription>
+        <ToastDescription>There was a problem with your request.</ToastDescription>
       </Toast>
     </ToastProvider>
   ),
@@ -72,9 +68,7 @@ export const Warning: Story = {
     <ToastProvider>
       <Toast variant="warning">
         <ToastTitle>Warning</ToastTitle>
-        <ToastDescription>
-          Your session is about to expire.
-        </ToastDescription>
+        <ToastDescription>Your session is about to expire.</ToastDescription>
       </Toast>
     </ToastProvider>
   ),
@@ -85,10 +79,8 @@ export const Info: Story = {
     <ToastProvider>
       <Toast variant="info">
         <ToastTitle>Information</ToastTitle>
-        <ToastDescription>
-          A new version is available.
-        </ToastDescription>
+        <ToastDescription>A new version is available.</ToastDescription>
       </Toast>
     </ToastProvider>
   ),
-}; 
+};

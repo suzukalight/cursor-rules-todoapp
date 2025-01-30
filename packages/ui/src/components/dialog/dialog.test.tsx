@@ -30,7 +30,7 @@ describe('Dialog', () => {
             <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
         </DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     expect(screen.getByRole('button')).toHaveTextContent('ダイアログを開く');
@@ -49,7 +49,7 @@ describe('Dialog', () => {
             <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
         </DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     // 初期状態ではダイアログは閉じている
@@ -101,7 +101,7 @@ describe('Dialog', () => {
             カスタム閉じるボタン
           </Button>
         </DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     // 初期状態ではダイアログは開いている
@@ -136,7 +136,7 @@ describe('Dialog', () => {
           <Button>次</Button>
           <Button>最後</Button>
         </DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     // ダイアログを開く
@@ -160,4 +160,4 @@ describe('Dialog', () => {
       expect(screen.getByRole('button', { name: '最初' })).toHaveFocus();
     });
   });
-}); 
+});

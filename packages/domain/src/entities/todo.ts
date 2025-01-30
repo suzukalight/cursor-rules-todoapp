@@ -89,4 +89,4 @@ export class Todo {
     this.props.description = description;
     this.props.updatedAt = new Date();
   }
-} 
+}

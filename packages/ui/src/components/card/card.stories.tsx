@@ -64,4 +64,4 @@ export const CompleteCard: Story = {
       </>
     ),
   },
-}; 
+};

@@ -8,4 +8,4 @@ export const createAppRouter = (todoRepository: TodoRepository) => {
   });
 };
 
-export type AppRouter = ReturnType<typeof createAppRouter>; 
+export type AppRouter = ReturnType<typeof createAppRouter>;

@@ -27,8 +27,33 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
-      "trailingComma": "es5",
+      "trailingCommas": "es5",
       "semicolons": "always"
     }
+  },
+  "files": {
+    "ignore": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/coverage/**",
+      "**/storybook-static/**",
+      "**/.turbo/**",
+      "**/.git/**",
+      "**/.cache/**",
+      "**/build/**",
+      "**/.env*",
+      "**/*.min.js",
+      "**/*.config.js",
+      "**/tsconfig*.json",
+      "**/package-lock.json",
+      "**/yarn.lock",
+      "**/pnpm-lock.yaml",
+      "**/public/**",
+      "**/.vscode/**",
+      "**/.idea/**",
+      "**/tmp/**",
+      "**/logs/**"
+    ]
   }
-} 
+}

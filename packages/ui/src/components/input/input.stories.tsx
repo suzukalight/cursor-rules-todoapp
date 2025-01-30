@@ -38,4 +38,4 @@ export const WithType: Story = {
     type: 'password',
     placeholder: 'Enter password...',
   },
-}; 
+};

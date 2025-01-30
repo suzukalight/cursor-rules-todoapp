@@ -26,4 +26,4 @@ export class UpdateTodoUseCase {
     await this.todoRepository.save(todo);
     return todo;
   }
-} 
+}

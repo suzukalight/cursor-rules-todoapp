@@ -100,4 +100,4 @@ describe('TodoCardコンポーネント', () => {
     fireEvent.click(cancelButton);
     expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'cancelled');
   });
-}); 
+});

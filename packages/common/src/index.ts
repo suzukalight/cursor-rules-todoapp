@@ -1,2 +1,2 @@
 export * from './types/todo';
-export * from './constants/todo'; 
+export * from './constants/todo';

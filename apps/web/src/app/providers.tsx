@@ -9,10 +9,8 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider defaultTheme="light" storageKey="todo-theme">
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
       </trpc.Provider>
     </ThemeProvider>
   );
-} 
+}

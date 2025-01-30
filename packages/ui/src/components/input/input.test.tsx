@@ -50,4 +50,4 @@ describe('Input', () => {
     await userEvent.type(input, 'あ');
     expect(handleChange).toHaveBeenCalled();
   });
-}); 
+});

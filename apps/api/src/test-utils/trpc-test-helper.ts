@@ -21,7 +21,10 @@ interface TRPCTestHelperOptions {
 export class TRPCTestHelper {
   private readonly debug: boolean;
 
-  constructor(private readonly app: Express, options: TRPCTestHelperOptions = {}) {
+  constructor(
+    private readonly app: Express,
+    options: TRPCTestHelperOptions = {}
+  ) {
     this.debug = options.debug ?? false;
   }
 
@@ -117,11 +120,7 @@ export class TRPCTestHelper {
   /**
    * レスポンスがエラーであることを検証する
    */
-  expectError<T>(
-    response: APIResponse<T>,
-    expectedStatus: number,
-    expectedMessage?: string,
-  ) {
+  expectError<T>(response: APIResponse<T>, expectedStatus: number, expectedMessage?: string) {
     expect(response.status).toBe(expectedStatus);
     expect(response.error).toBeDefined();
     expect(response.data).toBeUndefined();
@@ -129,5 +128,4 @@ export class TRPCTestHelper {
       expect(response.error.message).toContain(expectedMessage);
     }
   }
-} 
-
+}

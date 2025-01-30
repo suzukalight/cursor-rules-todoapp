@@ -3,11 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "main": "index.js",
-  "files": [
-    "tsconfig",
-    "tailwind",
-    "biome"
-  ],
+  "files": ["tsconfig", "tailwind", "biome"],
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "lint": "biome check .",
@@ -17,4 +13,4 @@
     "@biomejs/biome": "^1.9.4",
     "typescript": "^5.3.3"
   }
-} 
+}

@@ -3,4 +3,4 @@ export class TodoNotFoundError extends Error {
     super(`Todo not found: ${id}`);
     this.name = 'TodoNotFoundError';
   }
-} 
+}

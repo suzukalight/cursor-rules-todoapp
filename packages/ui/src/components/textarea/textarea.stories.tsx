@@ -38,4 +38,4 @@ export const WithRows: Story = {
     rows: 6,
     placeholder: 'Textarea with 6 rows',
   },
-}; 
+};

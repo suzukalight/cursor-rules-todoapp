@@ -42,14 +42,10 @@ describe('TodoListコンポーネント', () => {
 
   it('空のTodoリストが表示される', () => {
     render(
-      <TodoList
-        todos={[]}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-      />
+      <TodoList todos={[]} onUpdateTitle={mockOnUpdateTitle} onUpdateStatus={mockOnUpdateStatus} />
     );
 
     const grid = screen.getByRole('generic');
     expect(grid).toBeEmptyDOMElement();
   });
-}); 
+});

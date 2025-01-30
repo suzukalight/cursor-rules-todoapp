@@ -28,4 +28,4 @@ export function TodoList({ todos, onUpdateTitle, onUpdateStatus }: TodoListProps
       )}
     </div>
   );
-} 
+}

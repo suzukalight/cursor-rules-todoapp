@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { TODO_STATUS, TODO_STATUS_LABEL } from './todo';
 
 describe('Todo Constants', () => {
@@ -13,4 +13,4 @@ describe('Todo Constants', () => {
     expect(TODO_STATUS_LABEL['in-progress']).toBe('進行中');
     expect(TODO_STATUS_LABEL.completed).toBe('完了');
   });
-}); 
+});

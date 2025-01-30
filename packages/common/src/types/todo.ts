@@ -11,4 +11,4 @@ export interface Todo {
 }
 
 export type CreateTodoInput = Pick<Todo, 'title' | 'description'>;
-export type UpdateTodoInput = Partial<Pick<Todo, 'title' | 'description' | 'status'>>; 
+export type UpdateTodoInput = Partial<Pick<Todo, 'title' | 'description' | 'status'>>;

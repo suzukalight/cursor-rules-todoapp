@@ -17,7 +17,7 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     render(<Checkbox label="チェックする" />);
     const checkbox = screen.getByRole('checkbox');
-    
+
     expect(checkbox).not.toBeChecked();
     await act(async () => {
       await user.click(checkbox);
@@ -58,12 +58,12 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     render(<Checkbox label="キーボードテスト" />);
     const checkbox = screen.getByRole('checkbox');
-    
+
     await act(async () => {
       await user.tab();
     });
     expect(checkbox).toHaveFocus();
-    
+
     await act(async () => {
       await user.keyboard('[Space]');
     });
@@ -76,7 +76,7 @@ describe('Checkbox', () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
     render(<Checkbox onCheckedChange={handleChange} />);
-    
+
     await act(async () => {
       await user.click(screen.getByRole('checkbox'));
     });
@@ -84,4 +84,4 @@ describe('Checkbox', () => {
       expect(handleChange).toHaveBeenCalledWith(true);
     });
   });
-}); 
+});

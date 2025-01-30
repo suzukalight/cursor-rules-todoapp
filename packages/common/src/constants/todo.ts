@@ -12,4 +12,4 @@ export const TODO_STATUS_LABEL: Record<TodoStatus, string> = {
   'in-progress': '進行中',
   completed: '完了',
   cancelled: 'キャンセル',
-} as const; 
+} as const;

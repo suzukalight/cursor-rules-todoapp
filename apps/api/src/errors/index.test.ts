@@ -28,4 +28,4 @@ describe('handleError', () => {
     handleError(error);
     expect(console.error).toHaveBeenCalledWith('[Unknown Error]', 'Unknown error');
   });
-}); 
+});
