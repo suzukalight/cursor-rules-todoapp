@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "prisma": "^5.22.0",
     "turbo": "latest"
   },
   "packageManager": "pnpm@8.9.0",

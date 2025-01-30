@@ -11,10 +11,9 @@ interface TodoCardProps {
   todo: Todo;
   onUpdateTitle: (id: string, title: string) => void;
   onUpdateStatus: (id: string, status: TodoStatus) => void;
-  'data-testid'?: string;
 }
 
-export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': testId }: TodoCardProps) => {
+export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus }: TodoCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(todo.title);
 
@@ -35,7 +34,6 @@ export const TodoCard = ({ todo, onUpdateTitle, onUpdateStatus, 'data-testid': t
 
   return (
     <motion.div
-      data-testid={testId}
       initial={{ opacity: 0, y: 20 }}
       animate={{
         opacity: 1,

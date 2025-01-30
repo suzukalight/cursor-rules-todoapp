@@ -11,10 +11,7 @@
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
     "lint": "biome check .",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
     "@cursor-rules-todoapp/domain": "workspace:*",
@@ -31,11 +28,7 @@
     "@cursor-rules-todoapp/configs": "workspace:*",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/supertest": "^6.0.2",
-    "@vitest/coverage-v8": "^1.4.0",
-    "supertest": "^6.3.4",
     "tsup": "^8.0.1",
-    "typescript": "^5.3.3",
-    "vitest": "^1.4.0"
+    "typescript": "^5.3.3"
   }
 }

@@ -5,18 +5,8 @@ export interface Container {
   todoRepository: TodoRepository;
 }
 
-export const createContainer = (databaseUrl?: string): Container => {
-  const prisma = new PrismaClient(
-    databaseUrl
-      ? {
-          datasources: {
-            db: {
-              url: databaseUrl,
-            },
-          },
-        }
-      : undefined
-  );
+export const createContainer = (): Container => {
+  const prisma = new PrismaClient();
   const todoRepository = new TodoRepository(prisma);
 
   return {
