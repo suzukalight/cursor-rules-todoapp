@@ -32,7 +32,7 @@ export class TestDatabase {
     }
 
     // テンプレートDBを作成
-    execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" npx prisma db push --force-reset`, {
+    execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" pnpm db:push`, {
       cwd: TEST_DB_DIR,
       stdio: 'inherit',
     });
