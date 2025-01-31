@@ -32,10 +32,12 @@ export class TestDatabase {
     }
 
     // テンプレートDBを作成
-    execSync(`DATABASE_URL="file:${TEMPLATE_DB_PATH}" pnpm db:push`, {
-      cwd: TEST_DB_DIR,
-      stdio: 'inherit',
-    });
+    execSync(
+      `cd ${TEST_DB_DIR} && DATABASE_URL="file:${TEMPLATE_DB_PATH}" npx prisma db push --accept-data-loss`,
+      {
+        stdio: 'inherit',
+      }
+    );
 
     // テンプレートDBが作成されたことを確認
     if (!existsSync(TEMPLATE_DB_PATH)) {
