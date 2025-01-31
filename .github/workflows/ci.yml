@@ -60,6 +60,7 @@ jobs:
             ${{ runner.os }}-turbo-
 
       - name: Setup Playwright browsers cache
+        id: playwright-cache
         uses: actions/cache@v3
         with:
           path: ~/.cache/ms-playwright
