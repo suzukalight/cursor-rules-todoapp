@@ -9,22 +9,21 @@ interface TodoListProps {
 
 export function TodoList({ todos, onUpdateTitle, onUpdateStatus }: TodoListProps) {
   return (
-    <div data-testid="todo-list" className="mt-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="mt-4" data-testid="todo-list">
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 list-none p-0">
         {todos.map((todo) => (
-          <TodoCard
-            key={todo.id}
-            todo={todo}
-            onUpdateTitle={onUpdateTitle}
-            onUpdateStatus={onUpdateStatus}
-            data-testid="todo-item"
-          />
+          <li key={todo.id}>
+            <TodoCard
+              todo={todo}
+              onUpdateTitle={onUpdateTitle}
+              onUpdateStatus={onUpdateStatus}
+              data-testid="todo-item"
+            />
+          </li>
         ))}
-      </div>
+      </ul>
       {todos.length === 0 && (
-        <div className="text-center text-gray-500 min-h-[100px] flex items-center justify-center">
-          TODOがありません
-        </div>
+        <div className="text-center text-gray-500 dark:text-gray-400">TODOがありません</div>
       )}
     </div>
   );

@@ -47,6 +47,7 @@ export const TodoFilter = ({
               id="status-filter"
               className="w-[180px] bg-white dark:bg-gray-700 dark:text-gray-100 border-gray-200 dark:border-gray-600 rounded-lg"
               aria-labelledby="status-filter-label"
+              data-testid="status-filter"
             >
               <SelectValue placeholder="ステータス" />
             </SelectTrigger>
