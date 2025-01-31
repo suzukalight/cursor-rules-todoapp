@@ -7,7 +7,8 @@ on:
     branches: [main]
 
 env:
-  DATABASE_URL: "file:./prisma/test.db"
+  DATABASE_URL: "file:./test.db"
+  NODE_ENV: "test"
 
 jobs:
   build:
@@ -68,16 +69,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma Client
-        run: pnpm --filter @cursor-rules-todoapp/repo-sqlite exec prisma generate
-
-      - name: Initialize test database
+      - name: Setup Database
         working-directory: packages/repo-sqlite
         run: |
-          mkdir -p prisma
-          touch prisma/test.db
-          pnpm exec prisma migrate deploy
-          pnpm exec prisma db push --accept-data-loss
+          pnpm db:generate
+          pnpm db:push
 
       - name: Build
         run: pnpm build
