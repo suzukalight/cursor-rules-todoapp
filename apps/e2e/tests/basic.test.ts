@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('基本的なページ表示', () => {
   test('ページタイトルが正しく表示される', async ({ page }) => {
@@ -34,4 +34,4 @@ test.describe('基本的なページ表示', () => {
     const emptyMessage = page.getByText('TODOがありません');
     await expect(emptyMessage).toBeVisible({ timeout: 60000 });
   });
-}); 
+});

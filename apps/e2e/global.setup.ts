@@ -8,4 +8,4 @@ async function globalSetup() {
   process.env.DATABASE_URL = db.getDatabaseUrl();
 }
 
-export default globalSetup; 
+export default globalSetup;

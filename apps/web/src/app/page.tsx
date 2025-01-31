@@ -150,7 +150,11 @@ export default function TodoPage() {
         <h1 className="text-2xl font-bold dark:text-gray-100">Todo List</h1>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button onClick={handleCreateTodo} className="h-8 rounded-lg" data-testid="create-todo-button">
+          <Button
+            onClick={handleCreateTodo}
+            className="h-8 rounded-lg"
+            data-testid="create-todo-button"
+          >
             <Plus className="mr-2 h-4 w-4" />
             新規作成
           </Button>
