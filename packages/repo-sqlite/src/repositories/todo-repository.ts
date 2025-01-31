@@ -1,6 +1,6 @@
-import type { PrismaClient } from '@prisma/client';
 import type { Todo, TodoId } from '@cursor-rules-todoapp/domain';
 import type { TodoRepository as ITodoRepository } from '@cursor-rules-todoapp/domain';
+import type { PrismaClient } from '@prisma/client';
 import { TodoMapper } from '../mappers/todo-mapper';
 
 type TransactionClient = Omit<
