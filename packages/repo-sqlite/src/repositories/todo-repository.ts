@@ -1,17 +1,21 @@
-import type { Todo } from '@cursor-rules-todoapp/domain';
-import type { TodoRepository as ITodoRepository, TodoId } from '@cursor-rules-todoapp/domain';
 import type { PrismaClient } from '@prisma/client';
+import type { Todo, TodoId } from '@cursor-rules-todoapp/domain';
+import type { TodoRepository as ITodoRepository } from '@cursor-rules-todoapp/domain';
 import { TodoMapper } from '../mappers/todo-mapper';
+
+type TransactionClient = Omit<
+  PrismaClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>;
 
 export class TodoRepository implements ITodoRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async save(todo: Todo): Promise<void> {
-    const data = TodoMapper.toPrisma(todo);
     await this.prisma.todo.upsert({
-      where: { id: data.id },
-      create: data,
-      update: data,
+      where: { id: todo.id },
+      create: TodoMapper.toPrisma(todo),
+      update: TodoMapper.toPrisma(todo),
     });
   }
 
@@ -19,9 +23,7 @@ export class TodoRepository implements ITodoRepository {
     const todo = await this.prisma.todo.findUnique({
       where: { id },
     });
-
-    if (!todo) return null;
-    return TodoMapper.toDomain(todo);
+    return todo ? TodoMapper.toDomain(todo) : null;
   }
 
   async findAll(): Promise<Todo[]> {
@@ -37,7 +39,7 @@ export class TodoRepository implements ITodoRepository {
 
   async transaction<T>(operation: () => Promise<T>): Promise<T> {
     return await this.prisma.$transaction(
-      async (tx) => {
+      async (tx: TransactionClient) => {
         const tempRepo = new TodoRepository(tx as unknown as PrismaClient);
         return await operation.call(tempRepo);
       },
