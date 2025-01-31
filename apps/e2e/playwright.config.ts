@@ -22,13 +22,13 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm --filter api dev',
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 60 * 1000,
       port: 3001,
     },
     {
       command: 'pnpm --filter web dev',
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 60 * 1000,
       port: 3000,
     },

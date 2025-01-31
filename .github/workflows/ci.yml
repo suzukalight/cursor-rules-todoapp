@@ -9,6 +9,7 @@ on:
 env:
   DATABASE_URL: "file:./test.db"
   NODE_ENV: "test"
+  DEBUG: "pw:api"
 
 jobs:
   build:
@@ -89,9 +90,10 @@ jobs:
         run: pnpm --filter @cursor-rules-todoapp/e2e exec playwright install --with-deps
 
       - name: E2E Tests
-        run: pnpm test:e2e
+        run: pnpm test:e2e --debug
         env:
           CI: true
+          DEBUG: pw:api,pw:protocol*
 
       - name: Upload test results
         if: always()
