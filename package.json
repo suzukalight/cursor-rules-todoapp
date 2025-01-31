@@ -13,7 +13,8 @@
     "biome:lint": "biome lint .",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
-    "test:coverage": "turbo run test:coverage"
+    "test:coverage": "turbo run test:coverage",
+    "test:e2e": "pnpm --filter @cursor-rules-todoapp/e2e test:e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
