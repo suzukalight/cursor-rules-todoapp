@@ -91,7 +91,7 @@ jobs:
         run: pnpm --filter @cursor-rules-todoapp/e2e exec playwright install --with-deps
 
       - name: E2E Tests
-        run: pnpm test:e2e -- --debug
+        run: pnpm test:e2e
         env:
           CI: true
           DEBUG: pw:api,pw:protocol*
