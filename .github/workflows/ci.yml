@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  DATABASE_URL: file:./test.db
+  DATABASE_URL: "file:./prisma/test.db"
 
 jobs:
   build:
@@ -72,11 +72,12 @@ jobs:
         run: pnpm --filter @cursor-rules-todoapp/repo-sqlite exec prisma generate
 
       - name: Initialize test database
+        working-directory: packages/repo-sqlite
         run: |
-          cd packages/repo-sqlite
-          pnpm exec prisma migrate reset --force
+          mkdir -p prisma
+          touch prisma/test.db
           pnpm exec prisma migrate deploy
-          pnpm exec prisma db push
+          pnpm exec prisma db push --accept-data-loss
 
       - name: Build
         run: pnpm build
