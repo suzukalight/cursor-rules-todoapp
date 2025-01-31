@@ -141,7 +141,7 @@ importers:
         version: 0.474.0(react@19.0.0)
       next:
         specifier: 15.1.6
-        version: 15.1.6(@babel/core@7.26.7)(@playwright/test@1.50.0)(react-dom@19.0.0)(react@19.0.0)
+        version: 15.1.6(@babel/core@7.26.7)(react-dom@19.0.0)(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -152,9 +152,6 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.2.0
-      '@playwright/test':
-        specifier: ^1.50.0
-        version: 1.50.0
       '@testing-library/jest-dom':
         specifier: ^6.6.3
         version: 6.6.3
@@ -1864,6 +1861,7 @@ packages:
     hasBin: true
     dependencies:
       playwright: 1.50.0
+    dev: true
 
   /@prisma/client@5.22.0(prisma@5.22.0):
     resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
@@ -5413,6 +5411,7 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
+    dev: true
     optional: true
 
   /fsevents@2.3.3:
@@ -6395,7 +6394,7 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
-  /next@15.1.6(@babel/core@7.26.7)(@playwright/test@1.50.0)(react-dom@19.0.0)(react@19.0.0):
+  /next@15.1.6(@babel/core@7.26.7)(react-dom@19.0.0)(react@19.0.0):
     resolution: {integrity: sha512-Hch4wzbaX0vKQtalpXvUiw5sYivBy4cm5rzUKrBnUB/y436LGrvOUqYvlSeNVCWFO/770gDlltR9gqZH62ct4Q==}
     engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
     hasBin: true
@@ -6417,7 +6416,6 @@ packages:
         optional: true
     dependencies:
       '@next/env': 15.1.6
-      '@playwright/test': 1.50.0
       '@swc/counter': 0.1.3
       '@swc/helpers': 0.5.15
       busboy: 1.6.0
@@ -6722,6 +6720,7 @@ packages:
     resolution: {integrity: sha512-CXkSSlr4JaZs2tZHI40DsZUN/NIwgaUPsyLuOAaIZp2CyF2sN5MM5NJsyB188lFSSozFxQ5fPT4qM+f0tH/6wQ==}
     engines: {node: '>=18'}
     hasBin: true
+    dev: true
 
   /playwright@1.50.0:
     resolution: {integrity: sha512-+GinGfGTrd2IfX1TA4N2gNmeIksSb+IAe589ZH+FlmpV3MYTx6+buChGIuDLQwrGNCw2lWibqV50fU510N7S+w==}
@@ -6731,6 +6730,7 @@ packages:
       playwright-core: 1.50.0
     optionalDependencies:
       fsevents: 2.3.2
+    dev: true
 
   /polished@4.3.1:
     resolution: {integrity: sha512-OBatVyC/N7SCW/FaDHrSd+vn0o5cS855TOmYi4OkdWUMSJCET/xip//ch8xGUvtr3i44X9LVyWwQlRMTN3pwSA==}
