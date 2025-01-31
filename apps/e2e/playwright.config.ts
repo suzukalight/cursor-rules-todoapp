@@ -12,6 +12,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     testIdAttribute: 'data-testid',
+    headless: !!process.env.CI,
   },
   projects: [
     {
