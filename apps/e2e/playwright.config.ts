@@ -19,11 +19,19 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'pnpm --filter web dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  webServer: [
+    {
+      command: 'pnpm --filter api dev',
+      reuseExistingServer: false,
+      timeout: 60 * 1000,
+      port: 3001,
+    },
+    {
+      command: 'pnpm --filter web dev',
+      reuseExistingServer: false,
+      timeout: 60 * 1000,
+      port: 3000,
+    },
+  ],
   outputDir: 'test-results/',
 }); 
