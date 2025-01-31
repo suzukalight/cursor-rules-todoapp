@@ -90,6 +90,17 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm --filter @cursor-rules-todoapp/e2e exec playwright install --with-deps
 
+      - name: Start Web Server
+        run: pnpm dev &
+        env:
+          CI: true
+          PORT: 3000
+          WAIT_ON_TIMEOUT: 60000
+
+      - name: Wait for Web Server
+        run: |
+          npx wait-on http://localhost:3000 -t 60000
+
       - name: E2E Tests
         run: pnpm test:e2e
         env:
