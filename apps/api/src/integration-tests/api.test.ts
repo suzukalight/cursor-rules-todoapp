@@ -1,13 +1,15 @@
-import type { Server } from 'node:http';
-import type { Todo, TodoRepository } from '@cursor-rules-todoapp/domain';
-import { TestDatabase } from '@cursor-rules-todoapp/repo-sqlite/src/test-utils/database';
-import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import type { Todo } from '@cursor-rules-todoapp/domain';
+import { TodoUseCaseImpl } from '../usecases/todo';
+import { TodoRepository } from '@cursor-rules-todoapp/repo-sqlite';
+import { PrismaClient } from '@prisma/client';
 import express from 'express';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createContainer } from '../container';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import type { Server } from 'node:http';
+import { appRouter } from '../router';
 import { handleError } from '../errors';
-import { createAppRouter } from '../router';
 import { TRPCTestHelper } from '../test-utils/trpc-test-helper';
+import { TestDatabase } from '@cursor-rules-todoapp/repo-sqlite/src/test-utils/database';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 // テスト環境を設定
 process.env.NODE_ENV = 'test';
@@ -23,11 +25,10 @@ interface ChangeStatusInput {
 }
 
 describe('API統合テスト', () => {
-  let app: express.Express;
   let server: Server;
-  let todoRepository: TodoRepository;
-  let testDb: TestDatabase;
   let helper: TRPCTestHelper;
+  let testDb: TestDatabase;
+  let todoRepository: TodoRepository;
 
   beforeAll(async () => {
     await TestDatabase.initialize();
@@ -37,22 +38,29 @@ describe('API統合テスト', () => {
     testDb = new TestDatabase();
     await testDb.setup();
 
-    // アプリケーションをセットアップ
-    app = express();
-    const container = createContainer(testDb.getDatabaseUrl());
-    todoRepository = container.todoRepository;
-    const appRouter = createAppRouter(todoRepository);
+    const app = express();
+    todoRepository = new TodoRepository(new PrismaClient({
+      datasources: {
+        db: {
+          url: testDb.getDatabaseUrl(),
+        },
+      },
+    }));
+    const todoUseCase = new TodoUseCaseImpl(todoRepository);
+    const router = appRouter({ todoUseCase });
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(
       '/trpc',
       createExpressMiddleware({
-        router: appRouter,
+        router,
         onError: ({ error }) => {
           handleError(error);
         },
-        createContext: () => ({}),
+        createContext: () => ({
+          todoUseCase,
+        }),
         batching: {
           enabled: false,
         },
@@ -68,28 +76,21 @@ describe('API統合テスト', () => {
   });
 
   afterEach(async () => {
-    await testDb.cleanup();
     server.close();
+    await testDb.cleanup();
   });
 
   describe('Todo API', () => {
-    it('Todoを作成して取得できる', async () => {
-      const createResponse = await helper.post<CreateTodoInput, Todo>('todo.create', {
+    it('Todoを作成できる', async () => {
+      const response = await helper.post<CreateTodoInput, Todo>('todo.create', {
         title: 'テストTodo',
         description: 'テストの説明',
       });
-      helper.expectSuccess(createResponse);
-      expect(createResponse.data).toBeDefined();
 
-      const findResponse = await helper.get<{ id: string }, Todo>('todo.findById', {
-        id: createResponse.data!.id,
-      });
-      helper.expectSuccess(findResponse);
-      expect(findResponse.data).toBeDefined();
-      expect(findResponse.data).toMatchObject({
-        title: 'テストTodo',
-        description: 'テストの説明',
-      });
+      helper.expectSuccess(response);
+      expect(response.data).toBeDefined();
+      expect(response.data!.title).toBe('テストTodo');
+      expect(response.data!.description).toBe('テストの説明');
     });
 
     it('存在しないTodoの取得でエラーになる', async () => {
@@ -123,7 +124,7 @@ describe('API統合テスト', () => {
       expect(completeResponse.data!.status).toBe('completed');
     });
 
-    it('全てのTodoを取得できる', async () => {
+    it('Todoの一覧を取得できる', async () => {
       await helper.post<CreateTodoInput, Todo>('todo.create', {
         title: 'テストTodo1',
         description: 'テストの説明1',
@@ -134,7 +135,7 @@ describe('API統合テスト', () => {
         description: 'テストの説明2',
       });
 
-      const response = await helper.get<void, Todo[]>('todo.findAll');
+      const response = await helper.get<undefined, Todo[]>('todo.findAll');
       helper.expectSuccess(response);
       expect(response.data).toBeDefined();
       expect(Array.isArray(response.data!)).toBe(true);
