@@ -7,7 +7,7 @@ export type TodoPriority = 'low' | 'medium' | 'high';
 const todoInputSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  priority: z.enum(['low', 'medium', 'high']),
   dueDate: z.date().optional(),
 });
 
@@ -49,8 +49,11 @@ export class Todo {
     this.#updatedAt = dto.updatedAt;
   }
 
-  static create(params: Partial<TodoInput> & Pick<TodoInput, 'title'>) {
-    const input = todoInputSchema.parse(params);
+  static create(params: Pick<TodoInput, 'title'> & Partial<Omit<TodoInput, 'title'>>) {
+    const input = todoInputSchema.parse({
+      ...params,
+      priority: params.priority ?? 'medium',
+    });
     const now = new Date();
     const nextNow = new Date(now.getTime() + 1);
 
@@ -58,7 +61,6 @@ export class Todo {
       ...input,
       id: crypto.randomUUID(),
       status: 'pending' as const,
-      priority: input.priority ?? 'medium',
       completedAt: undefined,
       createdAt: now,
       updatedAt: nextNow,
