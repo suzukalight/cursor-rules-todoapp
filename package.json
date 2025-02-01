@@ -9,7 +9,7 @@
     "lint": "turbo run lint",
     "format": "turbo run format",
     "biome:check": "biome check .",
-    "biome:format": "biome format . --write",
+    "biome:format": "biome format . --write --unsafe",
     "biome:lint": "biome lint .",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
