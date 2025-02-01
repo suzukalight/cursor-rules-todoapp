@@ -1,22 +1,22 @@
-import type { Todo } from '../todo/todo';
+import type { TodoDto } from '../todo/todo';
 import type { TodoRepository } from './todo-repository';
 
 export class InMemoryTodoRepository implements TodoRepository {
-  #todos: Todo[];
+  #todos: TodoDto[];
 
-  constructor(initialTodos: Todo[] = []) {
+  constructor(initialTodos: TodoDto[] = []) {
     this.#todos = initialTodos;
   }
 
-  async findById(id: string): Promise<Todo | null> {
+  async findById(id: string): Promise<TodoDto | null> {
     return this.#todos.find((todo) => todo.id === id) ?? null;
   }
 
-  async findAll(): Promise<Todo[]> {
+  async findAll(): Promise<TodoDto[]> {
     return [...this.#todos];
   }
 
-  async save(todo: Todo): Promise<Todo> {
+  async save(todo: TodoDto): Promise<TodoDto> {
     const index = this.#todos.findIndex((t) => t.id === todo.id);
     if (index === -1) {
       this.#todos.push(todo);
