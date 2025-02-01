@@ -1,6 +1,6 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import type { Todo, TodoPriority, TodoStatus } from '../todo/todo';
 import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto, TodoPriority, TodoStatus } from '../todo/todo';
 
 export interface FilterTodoInput {
   status?: TodoStatus;
@@ -12,7 +12,7 @@ export interface FilterTodoInput {
 export class FilterTodoUseCase {
   constructor(private readonly todoRepository: TodoRepository) {}
 
-  async execute(input: FilterTodoInput): Promise<Result<Todo[], Error>> {
+  async execute(input: FilterTodoInput): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
       const filteredTodos = todos.filter((todo) => {
@@ -27,16 +27,12 @@ export class FilterTodoUseCase {
         }
 
         // 期限でフィルタリング
-        if (input.dueDateBefore) {
-          if (!todo.dueDate || todo.dueDate > input.dueDateBefore) {
-            return false;
-          }
+        if (input.dueDateBefore && todo.dueDate && todo.dueDate > input.dueDateBefore) {
+          return false;
         }
 
-        if (input.dueDateAfter) {
-          if (!todo.dueDate || todo.dueDate < input.dueDateAfter) {
-            return false;
-          }
+        if (input.dueDateAfter && todo.dueDate && todo.dueDate < input.dueDateAfter) {
+          return false;
         }
 
         return true;
@@ -47,4 +43,4 @@ export class FilterTodoUseCase {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
   }
-} 
+}

@@ -1,50 +1,30 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import type { TodoDto } from '@cursor-rules-todoapp/domain';
-import {
-  ChangeTodoStatusUseCase,
-  CreateTodoUseCase,
-  DeleteTodoUseCase,
-  FilterTodoUseCase,
-  FindTodoUseCase,
-  SortTodoUseCase,
-  type TodoRepository,
-  UpdateTodoUseCase,
-} from '@cursor-rules-todoapp/domain';
+import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain';
+import type { TodoRepository } from '@cursor-rules-todoapp/domain';
 import type { TodoUseCase } from './todo';
 
 export class TodoUseCaseImpl implements TodoUseCase {
-  private readonly createTodoUseCase: CreateTodoUseCase;
-  private readonly updateTodoUseCase: UpdateTodoUseCase;
-  private readonly deleteTodoUseCase: DeleteTodoUseCase;
-  private readonly findTodoUseCase: FindTodoUseCase;
-  private readonly changeTodoStatusUseCase: ChangeTodoStatusUseCase;
-  private readonly filterTodoUseCase: FilterTodoUseCase;
-  private readonly sortTodoUseCase: SortTodoUseCase;
-
-  constructor(todoRepository: TodoRepository) {
-    this.createTodoUseCase = new CreateTodoUseCase(todoRepository);
-    this.updateTodoUseCase = new UpdateTodoUseCase(todoRepository);
-    this.deleteTodoUseCase = new DeleteTodoUseCase(todoRepository);
-    this.findTodoUseCase = new FindTodoUseCase(todoRepository);
-    this.changeTodoStatusUseCase = new ChangeTodoStatusUseCase(todoRepository);
-    this.filterTodoUseCase = new FilterTodoUseCase(todoRepository);
-    this.sortTodoUseCase = new SortTodoUseCase(todoRepository);
-  }
+  constructor(private readonly todoRepository: TodoRepository) {}
 
   async findAll(): Promise<Result<TodoDto[], Error>> {
-    const result = await this.findTodoUseCase.findAll();
-    if (result.isErr()) {
-      return result;
+    try {
+      const todos = await this.todoRepository.findAll();
+      return Result.ok(todos);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.map((todo) => todo.toDto()));
   }
 
   async findById(id: string): Promise<Result<TodoDto, Error>> {
-    const result = await this.findTodoUseCase.findById(id);
-    if (result.isErr()) {
-      return result;
+    try {
+      const todo = await this.todoRepository.findById(id);
+      if (!todo) {
+        return Result.err(new Error('Todo not found'));
+      }
+      return Result.ok(todo);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.toDto());
   }
 
   async create(input: {
@@ -53,11 +33,13 @@ export class TodoUseCaseImpl implements TodoUseCase {
     priority?: 'low' | 'medium' | 'high';
     dueDate?: Date;
   }): Promise<Result<TodoDto, Error>> {
-    const result = await this.createTodoUseCase.execute(input);
-    if (result.isErr()) {
-      return result;
+    try {
+      const todo = Todo.create(input);
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.toDto());
   }
 
   async update(input: {
@@ -67,31 +49,66 @@ export class TodoUseCaseImpl implements TodoUseCase {
     priority?: 'low' | 'medium' | 'high';
     dueDate?: Date;
   }): Promise<Result<TodoDto, Error>> {
-    const result = await this.updateTodoUseCase.execute(input);
-    if (result.isErr()) {
-      return result;
+    try {
+      const found = await this.todoRepository.findById(input.id);
+      if (!found) {
+        return Result.err(new Error('Todo not found'));
+      }
+
+      const todo = Todo.reconstruct(found);
+      if (input.title) todo.updateTitle(input.title);
+      if ('description' in input) todo.updateDescription(input.description);
+      if (input.priority) todo.updatePriority(input.priority);
+      if ('dueDate' in input) todo.updateDueDate(input.dueDate);
+
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.toDto());
   }
 
   async delete(input: { id: string }): Promise<Result<void, Error>> {
-    return this.deleteTodoUseCase.execute({ id: input.id });
+    try {
+      await this.todoRepository.delete(input.id);
+      return Result.ok(undefined);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
+    }
   }
 
   async complete(input: { id: string }): Promise<Result<TodoDto, Error>> {
-    const result = await this.changeTodoStatusUseCase.execute({ id: input.id, status: 'completed' });
-    if (result.isErr()) {
-      return result;
+    try {
+      const found = await this.todoRepository.findById(input.id);
+      if (!found) {
+        return Result.err(new Error('Todo not found'));
+      }
+
+      const todo = Todo.reconstruct(found);
+      todo.complete();
+
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.toDto());
   }
 
   async cancel(input: { id: string }): Promise<Result<TodoDto, Error>> {
-    const result = await this.changeTodoStatusUseCase.execute({ id: input.id, status: 'pending' });
-    if (result.isErr()) {
-      return result;
+    try {
+      const found = await this.todoRepository.findById(input.id);
+      if (!found) {
+        return Result.err(new Error('Todo not found'));
+      }
+
+      const todo = Todo.reconstruct(found);
+      todo.cancel();
+
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.toDto());
   }
 
   async filter(input: {
@@ -100,21 +117,65 @@ export class TodoUseCaseImpl implements TodoUseCase {
     dueDateBefore?: Date;
     dueDateAfter?: Date;
   }): Promise<Result<TodoDto[], Error>> {
-    const result = await this.filterTodoUseCase.execute(input);
-    if (result.isErr()) {
-      return result;
+    try {
+      const todos = await this.todoRepository.findAll();
+      const filteredTodos = todos.filter((todo) => {
+        if (input.status && todo.status !== input.status) {
+          return false;
+        }
+        if (input.priority && todo.priority !== input.priority) {
+          return false;
+        }
+        if (input.dueDateBefore && todo.dueDate && todo.dueDate > input.dueDateBefore) {
+          return false;
+        }
+        if (input.dueDateAfter && todo.dueDate && todo.dueDate < input.dueDateAfter) {
+          return false;
+        }
+        return true;
+      });
+      return Result.ok(filteredTodos);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.map((todo) => todo.toDto()));
   }
 
   async sort(input: {
     sortBy: 'createdAt' | 'priority' | 'dueDate';
     order: 'asc' | 'desc';
   }): Promise<Result<TodoDto[], Error>> {
-    const result = await this.sortTodoUseCase.execute(input);
-    if (result.isErr()) {
-      return result;
+    try {
+      const todos = await this.todoRepository.findAll();
+      const sortedTodos = [...todos].sort((a, b) => {
+        switch (input.sortBy) {
+          case 'createdAt':
+            return input.order === 'asc'
+              ? a.createdAt.getTime() - b.createdAt.getTime()
+              : b.createdAt.getTime() - a.createdAt.getTime();
+
+          case 'priority': {
+            const priorityOrder = { high: 0, medium: 1, low: 2 };
+            const aValue = priorityOrder[a.priority];
+            const bValue = priorityOrder[b.priority];
+            return input.order === 'asc' ? aValue - bValue : bValue - aValue;
+          }
+
+          case 'dueDate': {
+            if (!a.dueDate && !b.dueDate) return 0;
+            if (!a.dueDate) return input.order === 'asc' ? -1 : 1;
+            if (!b.dueDate) return input.order === 'asc' ? 1 : -1;
+            return input.order === 'asc'
+              ? a.dueDate.getTime() - b.dueDate.getTime()
+              : b.dueDate.getTime() - a.dueDate.getTime();
+          }
+
+          default:
+            return 0;
+        }
+      });
+      return Result.ok(sortedTodos);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(result.value.map((todo) => todo.toDto()));
   }
 }

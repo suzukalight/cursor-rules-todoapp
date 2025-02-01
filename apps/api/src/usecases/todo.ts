@@ -1,6 +1,6 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import type { TodoRepository } from '@cursor-rules-todoapp/domain/src/repositories/todo-repository';
+import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 
 export interface TodoUseCase {
   findAll(): Promise<Result<TodoDto[], Error>>;
@@ -39,7 +39,7 @@ export class TodoUseCaseImpl implements TodoUseCase {
   async findAll(): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
-      return Result.ok(todos.map((todo: Todo) => todo.toJSON()));
+      return Result.ok(todos);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -51,7 +51,7 @@ export class TodoUseCaseImpl implements TodoUseCase {
       if (!todo) {
         return Result.err(new Error('Todo not found'));
       }
-      return Result.ok(todo.toJSON());
+      return Result.ok(todo);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -70,8 +70,8 @@ export class TodoUseCaseImpl implements TodoUseCase {
         priority: input.priority ?? 'medium',
         dueDate: input.dueDate,
       });
-      const saved = await this.todoRepository.save(todo);
-      return Result.ok(saved.toJSON());
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -85,11 +85,12 @@ export class TodoUseCaseImpl implements TodoUseCase {
     dueDate?: Date;
   }): Promise<Result<TodoDto, Error>> {
     try {
-      const todo = await this.todoRepository.findById(input.id);
-      if (!todo) {
+      const todoDto = await this.todoRepository.findById(input.id);
+      if (!todoDto) {
         return Result.err(new Error('Todo not found'));
       }
 
+      const todo = Todo.reconstruct(todoDto);
       if (input.title) {
         todo.updateTitle(input.title);
       }
@@ -103,8 +104,8 @@ export class TodoUseCaseImpl implements TodoUseCase {
         todo.updateDueDate(input.dueDate);
       }
 
-      const saved = await this.todoRepository.save(todo);
-      return Result.ok(saved.toJSON());
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -121,14 +122,15 @@ export class TodoUseCaseImpl implements TodoUseCase {
 
   async complete(input: { id: string }): Promise<Result<TodoDto, Error>> {
     try {
-      const todo = await this.todoRepository.findById(input.id);
-      if (!todo) {
+      const todoDto = await this.todoRepository.findById(input.id);
+      if (!todoDto) {
         return Result.err(new Error('Todo not found'));
       }
 
+      const todo = Todo.reconstruct(todoDto);
       todo.complete();
-      const saved = await this.todoRepository.save(todo);
-      return Result.ok(saved.toJSON());
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -136,14 +138,15 @@ export class TodoUseCaseImpl implements TodoUseCase {
 
   async cancel(input: { id: string }): Promise<Result<TodoDto, Error>> {
     try {
-      const todo = await this.todoRepository.findById(input.id);
-      if (!todo) {
+      const todoDto = await this.todoRepository.findById(input.id);
+      if (!todoDto) {
         return Result.err(new Error('Todo not found'));
       }
 
+      const todo = Todo.reconstruct(todoDto);
       todo.cancel();
-      const saved = await this.todoRepository.save(todo);
-      return Result.ok(saved.toJSON());
+      const saved = await this.todoRepository.save(todo.toDto());
+      return Result.ok(saved);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -157,14 +160,14 @@ export class TodoUseCaseImpl implements TodoUseCase {
   }): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
-      const filtered = todos.filter((todo: Todo) => {
+      const filtered = todos.filter((todo) => {
         if (input.status && todo.status !== input.status) return false;
         if (input.priority && todo.priority !== input.priority) return false;
         if (input.dueDateBefore && todo.dueDate && todo.dueDate > input.dueDateBefore) return false;
         if (input.dueDateAfter && todo.dueDate && todo.dueDate < input.dueDateAfter) return false;
         return true;
       });
-      return Result.ok(filtered.map((todo: Todo) => todo.toJSON()));
+      return Result.ok(filtered);
     } catch (error) {
       return Result.err(error as Error);
     }
@@ -176,7 +179,7 @@ export class TodoUseCaseImpl implements TodoUseCase {
   }): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
-      const sorted = [...todos].sort((a: Todo, b: Todo) => {
+      const sorted = [...todos].sort((a, b) => {
         const order = input.order === 'asc' ? 1 : -1;
         switch (input.sortBy) {
           case 'createdAt':
@@ -195,7 +198,7 @@ export class TodoUseCaseImpl implements TodoUseCase {
             return 0;
         }
       });
-      return Result.ok(sorted.map((todo: Todo) => todo.toJSON()));
+      return Result.ok(sorted);
     } catch (error) {
       return Result.err(error as Error);
     }

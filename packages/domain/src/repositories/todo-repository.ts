@@ -1,9 +1,9 @@
-import type { Todo } from '../todo/todo';
+import type { TodoDto } from '../todo/todo';
 
 export interface TodoRepository {
-  save(todo: Todo): Promise<Todo>;
-  findById(id: string): Promise<Todo | null>;
-  findAll(): Promise<Todo[]>;
+  save(todo: TodoDto): Promise<TodoDto>;
+  findById(id: string): Promise<TodoDto | null>;
+  findAll(): Promise<TodoDto[]>;
   delete(id: string): Promise<void>;
   transaction<T>(operation: () => Promise<T>): Promise<T>;
 }

@@ -41,7 +41,10 @@ export class TRPCTestHelper {
   /**
    * POSTリクエストを送信する
    */
-  async post<TInput extends object, TOutput>(endpoint: string, input: TInput): Promise<APIResponse<TOutput>> {
+  async post<TInput extends object, TOutput>(
+    endpoint: string,
+    input: TInput
+  ): Promise<APIResponse<TOutput>> {
     const response = await request(this.app)
       .post(`/trpc/${endpoint}`)
       .set('Content-Type', 'application/json')
@@ -73,7 +76,10 @@ export class TRPCTestHelper {
   /**
    * GETリクエストを送信する
    */
-  async get<TInput extends object | string | undefined, TOutput>(endpoint: string, input?: TInput): Promise<APIResponse<TOutput>> {
+  async get<TInput extends object | string | undefined, TOutput>(
+    endpoint: string,
+    input?: TInput
+  ): Promise<APIResponse<TOutput>> {
     const url = input
       ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify(input))}`
       : `/trpc/${endpoint}`;

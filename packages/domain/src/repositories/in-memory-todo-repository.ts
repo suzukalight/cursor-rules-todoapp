@@ -1,4 +1,4 @@
-import { Todo } from '../todo/todo';
+import type { Todo } from '../todo/todo';
 import type { TodoRepository } from './todo-repository';
 
 export class InMemoryTodoRepository implements TodoRepository {
@@ -36,4 +36,4 @@ export class InMemoryTodoRepository implements TodoRepository {
   async transaction<T>(fn: () => Promise<T>): Promise<T> {
     return fn();
   }
-} 
+}

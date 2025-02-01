@@ -1,10 +1,10 @@
+import type { TodoRepository } from '@cursor-rules-todoapp/domain';
 import { router } from '../trpc';
 import type { TodoUseCase } from '../usecases/todo';
+import { TodoUseCaseImpl } from '../usecases/todo';
 import { filterRouter } from './filter';
 import { sortRouter } from './sort';
 import { todoRouter } from './todo';
-import type { TodoRepository } from '@cursor-rules-todoapp/domain';
-import { TodoUseCaseImpl } from '../usecases/todo';
 
 export const appRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
   router({

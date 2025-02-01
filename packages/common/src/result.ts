@@ -1,7 +1,7 @@
 export class Result<T, E extends Error> {
   private constructor(
     private readonly _value: T | null,
-    private readonly _error: E | null,
+    private readonly _error: E | null
   ) {}
 
   static ok<T, E extends Error>(value: T): Result<T, E> {
@@ -54,4 +54,4 @@ export class Result<T, E extends Error> {
     }
     return fn(this._value!);
   }
-} 
+}

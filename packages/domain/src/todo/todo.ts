@@ -58,6 +58,7 @@ export class Todo {
       ...input,
       id: crypto.randomUUID(),
       status: 'pending' as const,
+      priority: input.priority ?? 'medium',
       completedAt: undefined,
       createdAt: now,
       updatedAt: nextNow,
@@ -164,4 +165,4 @@ export class Todo {
       updatedAt: this.#updatedAt,
     });
   }
-} 
+}

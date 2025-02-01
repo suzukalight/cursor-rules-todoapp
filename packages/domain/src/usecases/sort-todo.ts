@@ -1,6 +1,6 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import type { Todo } from '../todo/todo';
 import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto } from '../todo/todo';
 
 export type SortBy = 'createdAt' | 'priority' | 'dueDate';
 export type Order = 'asc' | 'desc';
@@ -13,7 +13,7 @@ export interface SortTodoInput {
 export class SortTodoUseCase {
   constructor(private readonly todoRepository: TodoRepository) {}
 
-  async execute(input: SortTodoInput): Promise<Result<Todo[], Error>> {
+  async execute(input: SortTodoInput): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
       const sortedTodos = [...todos].sort((a, b) => {
@@ -49,4 +49,4 @@ export class SortTodoUseCase {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
   }
-} 
+}

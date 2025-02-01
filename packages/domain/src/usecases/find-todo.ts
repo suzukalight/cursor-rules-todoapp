@@ -1,22 +1,26 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import type { Todo } from '../todo/todo';
 import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto } from '../todo/todo';
 
 export class FindTodoUseCase {
-  constructor(private readonly repository: TodoRepository) {}
+  constructor(private readonly todoRepository: TodoRepository) {}
 
-  async findById(id: string): Promise<Result<Todo, Error>> {
-    const todo = await this.repository.findById(id);
-    if (!todo) {
-      return Result.err(new Error('Todo not found'));
+  async findAll(): Promise<Result<TodoDto[], Error>> {
+    try {
+      const todos = await this.todoRepository.findAll();
+      return Result.ok(todos);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }
-    return Result.ok(todo);
   }
 
-  async findAll(): Promise<Result<Todo[], Error>> {
+  async findById(id: string): Promise<Result<TodoDto, Error>> {
     try {
-      const todos = await this.repository.findAll();
-      return Result.ok(todos);
+      const todo = await this.todoRepository.findById(id);
+      if (!todo) {
+        return Result.err(new Error('Todo not found'));
+      }
+      return Result.ok(todo);
     } catch (error) {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
     }

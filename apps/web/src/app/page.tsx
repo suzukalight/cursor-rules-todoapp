@@ -1,6 +1,7 @@
 'use client';
 
 import type { Todo, TodoStatus } from '@cursor-rules-todoapp/common';
+import type { TodoDto } from '@cursor-rules-todoapp/domain';
 import { Button } from '@cursor-rules-todoapp/ui';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -9,35 +10,19 @@ import { TodoFilter } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
 import { trpc } from '../utils/api';
 
-interface TodoData {
-  id: string;
-  title: string;
-  description?: string;
-  status: TodoStatus;
-  priority: 'high' | 'medium' | 'low';
-  dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
-}
-
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [status, setStatus] = useState<TodoStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt'>('createdAt');
 
-  const utils = trpc.useUtils();
-  const { data: todoData } = trpc.todo.findAll.useQuery(undefined, {
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-  });
+  const utils = trpc.useContext();
+  const { data: todoData } = trpc.todo.findAll.useQuery();
 
   useEffect(() => {
     if (todoData) {
-      console.log('todoData updated:', todoData);
       const convertedTodos = todoData.map((todo) => {
-        const data = ('props' in todo ? todo.props : todo) as TodoData;
+        const data = ('props' in todo ? todo.props : todo) as TodoDto;
         return {
           id: data.id,
           title: data.title,
@@ -45,37 +30,34 @@ export default function TodoPage() {
           status: data.status,
           priority: data.priority,
           dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-          createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-          updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
           completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
+          createdAt: new Date(data.createdAt),
+          updatedAt: new Date(data.updatedAt),
         };
       });
-      console.log('convertedTodos:', convertedTodos);
       setTodos(convertedTodos);
     }
   }, [todoData]);
 
   const createTodoMutation = trpc.todo.create.useMutation({
     onSuccess: async (data) => {
-      console.log('createTodoMutation onSuccess data:', data);
       if (!data) {
         console.warn('No data returned from mutation');
         return;
       }
 
-      const newTodo: Todo = {
+      const newTodo = {
         id: data.id,
         title: data.title,
         description: data.description,
         status: data.status,
-        priority: data.priority ?? 'medium',
+        priority: data.priority,
         dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-        createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-        updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+        createdAt: new Date(data.createdAt),
+        updatedAt: new Date(data.updatedAt),
         completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
       };
-      console.log('newTodo:', newTodo);
-      
+
       setTodos((prev) => [...prev, newTodo]);
       await utils.todo.findAll.invalidate();
     },
@@ -83,7 +65,7 @@ export default function TodoPage() {
 
   const updateTodoMutation = trpc.todo.update.useMutation({
     onSuccess: async (data) => {
-      const todoData = ('props' in data ? data.props : data) as TodoData;
+      const todoData = ('props' in data ? data.props : data) as TodoDto;
       const updatedTodo: Todo = {
         id: todoData.id,
         title: todoData.title,
@@ -102,7 +84,7 @@ export default function TodoPage() {
 
   const changeTodoStatusMutation = trpc.todo.changeStatus.useMutation({
     onSuccess: async (data) => {
-      const todoData = ('props' in data ? data.props : data) as TodoData;
+      const todoData = ('props' in data ? data.props : data) as TodoDto;
       const updatedTodo: Todo = {
         id: todoData.id,
         title: todoData.title,
@@ -121,12 +103,10 @@ export default function TodoPage() {
 
   const handleCreateTodo = async () => {
     try {
-      console.log('Creating new todo...');
-      const result = await createTodoMutation.mutateAsync({
+      await createTodoMutation.mutateAsync({
         title: '新しいタスク',
         description: '',
       });
-      console.log('mutateAsync result:', result);
     } catch (error) {
       console.error('Failed to create todo:', error);
     }
@@ -147,10 +127,10 @@ export default function TodoPage() {
     try {
       await changeTodoStatusMutation.mutateAsync({
         id,
-        action: status === 'completed' ? 'complete' : 'cancel',
+        status: status === 'completed' ? 'completed' : 'pending',
       });
     } catch (error) {
-      console.error('Failed to update todo status:', error);
+      console.error('Error updating todo status:', error);
     }
   };
 
