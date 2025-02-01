@@ -9,7 +9,6 @@ describe('TodoCardコンポーネント', () => {
     Todo.create({
       title: 'テストタスク',
       description: 'テストの説明文',
-      status: 'pending',
       priority: 'high',
       dueDate: new Date('2024-12-31'),
       ...overrides,
