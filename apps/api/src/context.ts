@@ -1,5 +1,5 @@
 import type { inferAsyncReturnType } from '@trpc/server';
-import type { CreateNextContextOptions } from '@trpc/server/adapters/next';
+import type { CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import type { TodoUseCase } from './usecases/todo';
 
 interface CreateContextOptions {
@@ -7,7 +7,7 @@ interface CreateContextOptions {
 }
 
 export async function createContext(
-  _opts: CreateNextContextOptions,
+  _opts: CreateExpressContextOptions,
   { todoUseCase }: CreateContextOptions
 ) {
   return {
