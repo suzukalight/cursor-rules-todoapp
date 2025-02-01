@@ -1,6 +1,6 @@
 'use client';
 
-import type { Todo, TodoStatus } from '@cursor-rules-todoapp/common';
+import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/common';
 import type { TodoDto } from '@cursor-rules-todoapp/domain';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
 import { useEffect, useState } from 'react';
@@ -81,6 +81,25 @@ export default function TodoPage() {
     },
   });
 
+  const updateTodoMutation = trpc.todo.update.useMutation({
+    onSuccess: async (data) => {
+      const todoData = ('props' in data ? data.props : data) as TodoDto;
+      const updatedTodo: Todo = {
+        id: todoData.id,
+        title: todoData.title,
+        description: todoData.description,
+        status: todoData.status,
+        priority: todoData.priority,
+        dueDate: todoData.dueDate ? new Date(todoData.dueDate) : undefined,
+        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
+        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
+        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
+      };
+      setTodos((prev) => prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo)));
+      await utils.todo.findAll.invalidate();
+    },
+  });
+
   const handleCreateTodo = async () => {
     try {
       await createTodoMutation.mutateAsync({
@@ -101,6 +120,17 @@ export default function TodoPage() {
       });
     } catch (error) {
       console.error('Error updating todo status:', error);
+    }
+  };
+
+  const handleUpdatePriority = async (id: string, priority: TodoPriority) => {
+    try {
+      await updateTodoMutation.mutateAsync({
+        id,
+        priority,
+      });
+    } catch (error) {
+      console.error('Error updating todo priority:', error);
     }
   };
 
@@ -141,7 +171,11 @@ export default function TodoPage() {
         onSortByChange={setSortBy}
       />
 
-      <TodoList todos={filteredTodos} onUpdateStatus={handleUpdateStatus} />
+      <TodoList
+        todos={filteredTodos}
+        onUpdateStatus={handleUpdateStatus}
+        onUpdatePriority={handleUpdatePriority}
+      />
     </main>
   );
 }

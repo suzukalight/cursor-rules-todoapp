@@ -2,14 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { TodoItem } from './todo-item';
 
 const meta = {
-  title: 'Features/TodoItem',
+  title: 'Components/TodoItem',
   component: TodoItem,
   parameters: {
     layout: 'centered',
   },
-  args: {
-    title: 'タスクのタイトル',
-  },
+  tags: ['autodocs'],
 } satisfies Meta<typeof TodoItem>;
 
 export default meta;
@@ -17,38 +15,35 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    title: 'ヨガ 30分 🧘',
-    time: '7:30',
-    tag: 'フィットネス',
-  },
-};
-
-export const Completed: Story = {
-  args: {
-    ...Default.args,
-    completed: true,
+    title: 'タスクのタイトル',
+    time: '12:00',
+    tag: 'タグ',
+    priority: 'medium',
   },
 };
 
 export const WithAlarm: Story = {
   args: {
-    title: '歯科の予約',
-    time: '10:00',
-    hasAlarm: true,
-    tag: '予約',
-  },
-};
-
-export const WithoutTimeAndTag: Story = {
-  args: {
-    title: 'パンを買う 🥖',
-  },
-};
-
-export const LongTitle: Story = {
-  args: {
-    title: 'とても長いタスクのタイトルです。これは複数行になる可能性があります。',
+    title: 'アラーム付きタスク',
     time: '15:00',
-    tag: 'テスト',
+    hasAlarm: true,
+    tag: 'アラーム',
+    priority: 'high',
+  },
+};
+
+export const Simple: Story = {
+  args: {
+    title: 'シンプルなタスク',
+    priority: 'low',
+  },
+};
+
+export const WithTag: Story = {
+  args: {
+    title: 'タグ付きタスク',
+    time: '18:00',
+    tag: 'タグ付き',
+    priority: 'medium',
   },
 };

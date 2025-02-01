@@ -17,9 +17,10 @@ interface TodoData {
 interface TodoListProps {
   todos: Todo[];
   onUpdateStatus: (id: string, status: TodoStatus) => void;
+  onUpdatePriority: (id: string, priority: TodoPriority) => void;
 }
 
-export function TodoList({ todos, onUpdateStatus }: TodoListProps) {
+export function TodoList({ todos, onUpdateStatus, onUpdatePriority }: TodoListProps) {
   return (
     <UITodoList>
       <div className="mt-4 w-full" data-testid="todo-list">
@@ -55,12 +56,15 @@ export function TodoList({ todos, onUpdateStatus }: TodoListProps) {
                         minute: '2-digit',
                       })}
                       hasAlarm={!!data.dueDate}
-                      tag={data.priority}
+                      priority={data.priority}
                       onToggle={() =>
                         onUpdateStatus(
                           data.id,
                           data.status === 'completed' ? 'pending' : 'completed'
                         )
+                      }
+                      onPriorityChange={(priority: TodoPriority) =>
+                        onUpdatePriority(data.id, priority)
                       }
                     />
                   </motion.div>

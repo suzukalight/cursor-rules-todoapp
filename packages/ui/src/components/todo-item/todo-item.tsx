@@ -1,5 +1,7 @@
+import type { TodoPriority } from '@cursor-rules-todoapp/common';
 import type { ReactNode } from 'react';
 import { Checkbox } from '../ui/checkbox';
+import { PrioritySelect } from '../ui/priority-select';
 
 export interface TodoItemProps {
   title: string;
@@ -7,7 +9,9 @@ export interface TodoItemProps {
   time?: string;
   hasAlarm?: boolean;
   tag?: string;
+  priority: TodoPriority;
   onToggle?: () => void;
+  onPriorityChange?: (priority: TodoPriority) => void;
 }
 
 export const TodoItem = ({
@@ -16,7 +20,9 @@ export const TodoItem = ({
   time,
   hasAlarm,
   tag,
+  priority,
   onToggle,
+  onPriorityChange,
 }: TodoItemProps) => {
   return (
     <div className="flex items-center gap-3 py-2 animate-slide-in">
@@ -37,11 +43,14 @@ export const TodoItem = ({
           {hasAlarm && <span className="text-gray-400 transition-opacity duration-200">⏰</span>}
         </div>
 
-        {tag && (
-          <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-600 transition-all duration-200">
-            {tag}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {tag && (
+            <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-600 transition-all duration-200">
+              {tag}
+            </span>
+          )}
+          <PrioritySelect value={priority} onValueChange={(value) => onPriorityChange?.(value)} />
+        </div>
       </div>
     </div>
   );

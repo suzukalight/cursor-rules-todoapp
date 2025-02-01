@@ -20,6 +20,9 @@ export {
 } from './components/select/select';
 
 // Custom Todo Components
-export { TodoList } from './components/todo-list/todo-list';
-export { TodoItem } from './components/todo-item/todo-item';
-export { AddTodoButton } from './components/add-todo-button/add-todo-button';
+export * from './components/todo-item/todo-item';
+export * from './components/todo-list/todo-list';
+export * from './components/add-todo-button/add-todo-button';
+export * from './components/ui/priority-select';
+export * from './components/ui/select';
+export { Checkbox } from './components/ui/checkbox';
