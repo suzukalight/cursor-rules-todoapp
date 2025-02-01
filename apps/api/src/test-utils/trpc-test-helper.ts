@@ -41,7 +41,7 @@ export class TRPCTestHelper {
   /**
    * POSTリクエストを送信する
    */
-  async post<TInput, TOutput>(endpoint: string, input: TInput): Promise<APIResponse<TOutput>> {
+  async post<TInput extends object, TOutput>(endpoint: string, input: TInput): Promise<APIResponse<TOutput>> {
     const response = await request(this.app)
       .post(`/trpc/${endpoint}`)
       .set('Content-Type', 'application/json')
@@ -60,7 +60,7 @@ export class TRPCTestHelper {
       const result = JSON.parse(response.text);
       return {
         status: response.status,
-        data: result.result.data.props as TOutput,
+        data: result.result.data as TOutput,
       };
     }
 
@@ -73,7 +73,7 @@ export class TRPCTestHelper {
   /**
    * GETリクエストを送信する
    */
-  async get<TInput, TOutput>(endpoint: string, input?: TInput): Promise<APIResponse<TOutput>> {
+  async get<TInput extends object | string | undefined, TOutput>(endpoint: string, input?: TInput): Promise<APIResponse<TOutput>> {
     const url = input
       ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify(input))}`
       : `/trpc/${endpoint}`;
@@ -88,17 +88,9 @@ export class TRPCTestHelper {
 
     if (response.status === 200) {
       const result = JSON.parse(response.text);
-      // findAllの場合は配列の各要素のpropsを取得
-      if (Array.isArray(result.result.data)) {
-        return {
-          status: response.status,
-          data: result.result.data.map((item: { props: unknown }) => item.props) as TOutput,
-        };
-      }
-      // 通常のレスポンス
       return {
         status: response.status,
-        data: result.result.data.props as TOutput,
+        data: result.result.data as TOutput,
       };
     }
 

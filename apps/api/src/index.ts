@@ -1,28 +1,20 @@
-export type { AppRouter } from './router';
+import { InMemoryTodoRepository } from '@cursor-rules-todoapp/domain';
+import { createNextApiHandler } from '@trpc/server/adapters/next';
+import type { NextApiHandler } from 'next';
+import { createContext } from './context';
+import { appRouter } from './router';
+import { TodoUseCaseImpl } from './usecases/todo-impl';
 
-import { createExpressMiddleware } from '@trpc/server/adapters/express';
-import cors from 'cors';
-import express from 'express';
-import { createContainer } from './container';
-import { handleError } from './errors';
-import { createAppRouter } from './router';
+// リポジトリの初期化
+const todoRepository = new InMemoryTodoRepository();
 
-const app = express();
-const container = createContainer();
-const appRouter = createAppRouter(container.todoRepository);
+// ユースケースの初期化
+const todoUseCase = new TodoUseCaseImpl(todoRepository);
 
-app.use(cors());
-app.use(express.json());
+// tRPCハンドラーの作成
+const handler: NextApiHandler = createNextApiHandler({
+  router: appRouter({ todoUseCase }),
+  createContext: (opts) => createContext(opts, { todoUseCase }),
+});
 
-app.use(
-  '/trpc',
-  createExpressMiddleware({
-    router: appRouter,
-    onError: ({ error }) => {
-      handleError(error);
-    },
-  })
-);
-
-const port = process.env.PORT || 3001;
-app.listen(port, () => {});
+export default handler;

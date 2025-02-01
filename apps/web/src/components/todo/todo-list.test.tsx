@@ -5,47 +5,47 @@ import { describe, expect, it, vi } from 'vitest';
 import { TodoList } from './todo-list';
 
 describe('TodoListコンポーネント', () => {
-  const mockTodos = [
+  const createMockTodo = (overrides = {}) =>
     Todo.create({
-      title: 'タスク1',
-      description: '説明1',
+      title: 'テストタスク',
+      description: 'テストの説明文',
       status: 'pending',
-    }),
-    Todo.create({
-      title: 'タスク2',
-      description: '説明2',
-      status: 'completed',
-    }),
-    Todo.create({
-      title: 'タスク3',
-      description: '説明3',
-      status: 'cancelled',
-    }),
+      priority: 'high',
+      dueDate: new Date('2024-12-31'),
+      ...overrides,
+    });
+
+  const mockTodos = [
+    createMockTodo({ title: 'タスク1' }),
+    createMockTodo({ title: 'タスク2', priority: 'medium' }),
+    createMockTodo({ title: 'タスク3', priority: 'low' }),
   ];
 
-  const mockOnUpdateTitle = vi.fn();
-  const mockOnUpdateStatus = vi.fn();
+  const mockHandlers = {
+    onUpdateTitle: vi.fn(),
+    onUpdateStatus: vi.fn(),
+    onUpdatePriority: vi.fn(),
+    onUpdateDueDate: vi.fn(),
+  };
 
   it('すべてのTodoが表示される', () => {
-    render(
-      <TodoList
-        todos={mockTodos}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-      />
-    );
+    render(<TodoList todos={mockTodos} {...mockHandlers} />);
 
     expect(screen.getByText('タスク1')).toBeInTheDocument();
     expect(screen.getByText('タスク2')).toBeInTheDocument();
     expect(screen.getByText('タスク3')).toBeInTheDocument();
   });
 
-  it('空のTodoリストが表示される', () => {
-    render(
-      <TodoList todos={[]} onUpdateTitle={mockOnUpdateTitle} onUpdateStatus={mockOnUpdateStatus} />
-    );
+  it('Todoが空の場合、メッセージが表示される', () => {
+    render(<TodoList todos={[]} {...mockHandlers} />);
 
-    const grid = screen.getByRole('generic');
-    expect(grid).toBeEmptyDOMElement();
+    expect(screen.getByText('TODOがありません')).toBeInTheDocument();
+  });
+
+  it('各Todoカードに正しいコールバックが渡される', () => {
+    render(<TodoList todos={mockTodos} {...mockHandlers} />);
+
+    const todoCards = screen.getAllByTestId('todo-item');
+    expect(todoCards).toHaveLength(3);
   });
 });
