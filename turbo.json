@@ -46,6 +46,10 @@
       "dependsOn": ["^build"],
       "outputs": ["test-results/**", "playwright-report/**"],
       "cache": false
+    },
+    "typecheck": {
+      "outputs": [],
+      "dependsOn": ["^build"]
     }
   }
 }
