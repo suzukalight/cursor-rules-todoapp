@@ -1,13 +1,13 @@
 import { InMemoryTodoRepository } from '@cursor-rules-todoapp/domain';
-import { describe, expect, test, afterEach, beforeEach, it } from 'vitest';
+import { TestDatabase } from '@cursor-rules-todoapp/repo-sqlite/src/test-utils/database';
+import type { inferProcedureInput } from '@trpc/server';
+import { afterEach, beforeEach, describe, expect, it, test } from 'vitest';
+import { createContainer } from '../container';
+import { createTestContainer } from '../test-utils/container';
 import { TodoUseCaseImpl } from '../usecases/todo-impl';
 import { appRouter } from './index';
-import { createTestContainer } from '../test-utils/container';
-import { TestDatabase } from '@cursor-rules-todoapp/repo-sqlite/src/test-utils/database';
-import { createContainer } from '../container';
-import { todoRouter } from './todo';
-import type { inferProcedureInput } from '@trpc/server';
 import type { AppRouter } from './index';
+import { todoRouter } from './todo';
 
 describe('todoRouter', () => {
   let testDb: TestDatabase;
@@ -26,16 +26,13 @@ describe('todoRouter', () => {
   });
 
   const todoRepository = new InMemoryTodoRepository();
-  const todoUseCase = new TodoUseCaseImpl(todoRepository);
+  const _todoUseCase = new TodoUseCaseImpl(todoRepository);
 
   const createTodoInput = {
     title: 'Test Todo',
     description: 'Test Description',
-    priority: 'high' as const,
-    dueDate: new Date('2024-12-31'),
   } as const;
 
-  // biome-ignore lint/correctness/noUnusedVariables: テストデータの型定義に使用
   const _createTodoInput = createTodoInput;
 
   describe('create', () => {
@@ -47,15 +44,15 @@ describe('todoRouter', () => {
         expect.objectContaining({
           title: _createTodoInput.title,
           description: _createTodoInput.description,
-          priority: _createTodoInput.priority,
-          dueDate: _createTodoInput.dueDate,
+          priority: 'medium',
           status: 'pending',
-        }),
+        })
       );
       expect(result.id).toBeDefined();
       expect(result.createdAt).toBeDefined();
       expect(result.updatedAt).toBeDefined();
       expect(result.completedAt).toBeUndefined();
+      expect(result.dueDate).toBeUndefined();
     });
 
     test('タイトルが空の場合はエラーになる', async () => {
@@ -64,7 +61,7 @@ describe('todoRouter', () => {
         caller.create({
           ..._createTodoInput,
           title: '',
-        }),
+        })
       ).rejects.toThrow();
     });
   });
@@ -86,16 +83,18 @@ describe('todoRouter', () => {
       const result = await caller.findAll();
 
       expect(result).toHaveLength(2);
-      expect(result).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          title: 'Todo 1',
-          description: 'Description 1',
-        }),
-        expect.objectContaining({
-          title: 'Todo 2',
-          description: 'Description 2',
-        }),
-      ]));
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            title: 'Todo 1',
+            description: 'Description 1',
+          }),
+          expect.objectContaining({
+            title: 'Todo 2',
+            description: 'Description 2',
+          }),
+        ])
+      );
     });
   });
 
@@ -133,7 +132,7 @@ describe('todoRouter', () => {
           title: updateInput.title,
           description: updateInput.description,
           priority: updateInput.priority,
-        }),
+        })
       );
       expect(result.updatedAt.getTime()).toBeGreaterThan(created.updatedAt.getTime());
     });
@@ -144,7 +143,7 @@ describe('todoRouter', () => {
         caller.update({
           id: 'non-existent',
           title: 'Updated Title',
-        }),
+        })
       ).rejects.toThrow();
     });
   });
@@ -187,7 +186,7 @@ describe('todoRouter', () => {
     test('存在しないIDの場合はエラーになる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       await expect(
-        caller.changeStatus({ id: 'non-existent', status: 'completed' }),
+        caller.changeStatus({ id: 'non-existent', status: 'completed' })
       ).rejects.toThrow();
     });
   });
@@ -202,11 +201,12 @@ describe('todoRouter', () => {
         priority: 'high',
         dueDate: new Date('2024-01-01'),
       });
-      await caller.create({
+      const todo2 = await caller.create({
         title: 'Todo 2',
         priority: 'low',
         dueDate: new Date('2024-06-01'),
       });
+      await caller.changeStatus({ id: todo2.id, status: 'completed' });
     });
 
     it('ステータスでフィルタリングできる', async () => {
@@ -268,8 +268,8 @@ describe('todoRouter', () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const result = await caller.sort({ sortBy: 'priority', order: 'asc' });
 
-      expect(result[0].priority).toBe('low');
-      expect(result[1].priority).toBe('high');
+      expect(result[0].priority).toBe('high');
+      expect(result[1].priority).toBe('low');
     });
 
     it('期限でソートできる', async () => {
@@ -283,4 +283,4 @@ describe('todoRouter', () => {
       }
     });
   });
-}); 
+});

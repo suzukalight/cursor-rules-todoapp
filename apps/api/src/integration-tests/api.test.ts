@@ -81,7 +81,9 @@ describe('API統合テスト', () => {
       helper.expectSuccess(createResponse);
       expect(createResponse.data).toBeDefined();
 
-      const findResponse = await helper.get<{ id: string }, Todo>('todo.findById', { id: createResponse.data!.id });
+      const findResponse = await helper.get<{ id: string }, Todo>('todo.findById', {
+        id: createResponse.data!.id,
+      });
       helper.expectSuccess(findResponse);
       expect(findResponse.data).toBeDefined();
       expect(findResponse.data).toMatchObject({
@@ -91,7 +93,9 @@ describe('API統合テスト', () => {
     });
 
     it('存在しないTodoの取得でエラーになる', async () => {
-      const response = await helper.get<{ id: string }, Todo>('todo.findById', { id: 'non-existent-id' });
+      const response = await helper.get<{ id: string }, Todo>('todo.findById', {
+        id: 'non-existent-id',
+      });
       helper.expectError(response, 404, 'Todo not found');
     });
 

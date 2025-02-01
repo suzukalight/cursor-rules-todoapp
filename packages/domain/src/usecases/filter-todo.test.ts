@@ -1,166 +1,187 @@
-import { describe, expect, test } from 'vitest';
+import { Result } from '@cursor-rules-todoapp/common';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto } from '../todo/todo';
 import { FilterTodoUseCase } from './filter-todo';
-import { InMemoryTodoRepository } from '../repositories/in-memory-todo-repository';
-import { Todo } from '../todo/todo';
 
 describe('FilterTodoUseCase', () => {
-  test('ステータスでフィルタリングできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new FilterTodoUseCase(repository);
+  const mockTodoRepository: TodoRepository = {
+    findAll: vi.fn(),
+    findById: vi.fn(),
+    save: vi.fn(),
+    delete: vi.fn(),
+    transaction: vi.fn(),
+  };
 
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
+  const useCase = new FilterTodoUseCase(mockTodoRepository);
+
+  const mockTodos: TodoDto[] = [
+    {
+      id: 'test-id-1',
+      title: 'テストタスク1',
+      description: 'テストの説明1',
+      status: 'pending',
       priority: 'high',
-    });
-    await repository.save(todo1);
-    await todo1.complete();
-    await repository.save(todo1);
-
-    const todo2 = Todo.create({
-      title: 'タスク2',
+      dueDate: new Date('2024-03-21'),
+      completedAt: undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'test-id-2',
+      title: 'テストタスク2',
+      description: 'テストの説明2',
+      status: 'completed',
       priority: 'medium',
-    });
-    await repository.save(todo2);
-
-    // 完了済みのTodoをフィルタリング
-    const completedResult = await useCase.execute({ status: 'completed' });
-    expect(completedResult.isOk()).toBe(true);
-    if (completedResult.isOk()) {
-      expect(completedResult.value).toHaveLength(1);
-      expect(completedResult.value[0].title).toBe('タスク1');
-    }
-
-    // 未完了のTodoをフィルタリング
-    const pendingResult = await useCase.execute({ status: 'pending' });
-    expect(pendingResult.isOk()).toBe(true);
-    if (pendingResult.isOk()) {
-      expect(pendingResult.value).toHaveLength(1);
-      expect(pendingResult.value[0].title).toBe('タスク2');
-    }
-  });
-
-  test('優先度でフィルタリングできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new FilterTodoUseCase(repository);
-
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
-      priority: 'high',
-    });
-    await repository.save(todo1);
-
-    const todo2 = Todo.create({
-      title: 'タスク2',
-      priority: 'medium',
-    });
-    await repository.save(todo2);
-
-    const todo3 = Todo.create({
-      title: 'タスク3',
+      dueDate: new Date('2024-03-22'),
+      completedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'test-id-3',
+      title: 'テストタスク3',
+      description: 'テストの説明3',
+      status: 'pending',
       priority: 'low',
-    });
-    await repository.save(todo3);
+      dueDate: undefined,
+      completedAt: undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
 
-    // 高優先度のTodoをフィルタリング
-    const highResult = await useCase.execute({ priority: 'high' });
-    expect(highResult.isOk()).toBe(true);
-    if (highResult.isOk()) {
-      expect(highResult.value).toHaveLength(1);
-      expect(highResult.value[0].title).toBe('タスク1');
-    }
+  beforeEach(() => {
+    vi.mocked(mockTodoRepository.findAll).mockResolvedValue(mockTodos);
+  });
 
-    // 中優先度のTodoをフィルタリング
-    const mediumResult = await useCase.execute({ priority: 'medium' });
-    expect(mediumResult.isOk()).toBe(true);
-    if (mediumResult.isOk()) {
-      expect(mediumResult.value).toHaveLength(1);
-      expect(mediumResult.value[0].title).toBe('タスク2');
+  it('正常系: ステータスでフィルタリングできること', async () => {
+    // Arrange
+    const input = {
+      status: 'pending' as const,
+    };
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value).toHaveLength(2);
+      expect(result.value.every((todo) => todo.status === 'pending')).toBe(true);
     }
   });
 
-  test('期限でフィルタリングできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new FilterTodoUseCase(repository);
+  it('正常系: 優先度でフィルタリングできること', async () => {
+    // Arrange
+    const input = {
+      priority: 'high' as const,
+    };
 
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
-      priority: 'high',
-      dueDate: new Date('2024-01-01'),
-    });
-    await repository.save(todo1);
+    // Act
+    const result = await useCase.execute(input);
 
-    const todo2 = Todo.create({
-      title: 'タスク2',
-      priority: 'medium',
-      dueDate: new Date('2024-06-01'),
-    });
-    await repository.save(todo2);
-
-    const todo3 = Todo.create({
-      title: 'タスク3',
-      priority: 'low',
-    });
-    await repository.save(todo3);
-
-    // 期限が2024-03-01以前のTodoをフィルタリング
-    const beforeResult = await useCase.execute({
-      dueDateBefore: new Date('2024-03-01'),
-    });
-    expect(beforeResult.isOk()).toBe(true);
-    if (beforeResult.isOk()) {
-      expect(beforeResult.value).toHaveLength(1);
-      expect(beforeResult.value[0].title).toBe('タスク1');
-    }
-
-    // 期限が2024-03-01以降のTodoをフィルタリング
-    const afterResult = await useCase.execute({
-      dueDateAfter: new Date('2024-03-01'),
-    });
-    expect(afterResult.isOk()).toBe(true);
-    if (afterResult.isOk()) {
-      expect(afterResult.value).toHaveLength(1);
-      expect(afterResult.value[0].title).toBe('タスク2');
-    }
-  });
-
-  test('複数の条件を組み合わせてフィルタリングできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new FilterTodoUseCase(repository);
-
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
-      priority: 'high',
-      dueDate: new Date('2024-01-01'),
-    });
-    await repository.save(todo1);
-
-    const todo2 = Todo.create({
-      title: 'タスク2',
-      priority: 'high',
-      dueDate: new Date('2024-06-01'),
-    });
-    await repository.save(todo2);
-
-    const todo3 = Todo.create({
-      title: 'タスク3',
-      priority: 'medium',
-      dueDate: new Date('2024-01-01'),
-    });
-    await repository.save(todo3);
-
-    // 高優先度かつ期限が2024-03-01以前のTodoをフィルタリング
-    const result = await useCase.execute({
-      priority: 'high',
-      dueDateBefore: new Date('2024-03-01'),
-    });
+    // Assert
     expect(result.isOk()).toBe(true);
     if (result.isOk()) {
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].title).toBe('タスク1');
+      expect(result.value.every((todo) => todo.priority === 'high')).toBe(true);
     }
   });
-}); 
+
+  it('正常系: 期限でフィルタリングできること', async () => {
+    // Arrange
+    const input = {
+      dueDateBefore: new Date('2024-03-22T23:59:59.999Z'),
+      dueDateAfter: new Date('2024-03-20T00:00:00.000Z'),
+    };
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      const filteredTodos = result.value.filter((todo) => todo.dueDate);
+      expect(filteredTodos).toHaveLength(2);
+      expect(
+        filteredTodos.every((todo) => {
+          const dueDate = todo.dueDate!;
+          return dueDate >= input.dueDateAfter! && dueDate <= input.dueDateBefore!;
+        })
+      ).toBe(true);
+    }
+  });
+
+  it('正常系: 複数の条件でフィルタリングできること', async () => {
+    // Arrange
+    const input = {
+      status: 'pending' as const,
+      priority: 'high' as const,
+      dueDateBefore: new Date('2024-03-22'),
+    };
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value).toHaveLength(1);
+      expect(result.value[0].status).toBe('pending');
+      expect(result.value[0].priority).toBe('high');
+      expect(result.value[0].dueDate).toBeDefined();
+    }
+  });
+
+  it('正常系: フィルタリング条件に合致するTodoが存在しない場合は空配列を返すこと', async () => {
+    // Arrange
+    const input = {
+      status: 'completed' as const,
+      priority: 'high' as const,
+    };
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value).toHaveLength(0);
+    }
+  });
+
+  it('正常系: フィルタリング条件が指定されていない場合は全てのTodoを返すこと', async () => {
+    // Arrange
+    const input = {};
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value).toEqual(mockTodos);
+      expect(result.value).toHaveLength(3);
+    }
+  });
+
+  it('異常系: リポジトリでエラーが発生した場合はエラーを返すこと', async () => {
+    // Arrange
+    const input = {
+      status: 'pending' as const,
+    };
+
+    vi.mocked(mockTodoRepository.findAll).mockRejectedValue(new Error('Repository error'));
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('Repository error');
+    }
+  });
+});

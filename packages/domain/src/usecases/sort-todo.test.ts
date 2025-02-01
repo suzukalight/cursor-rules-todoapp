@@ -1,147 +1,203 @@
-import { describe, expect, test } from 'vitest';
+import { Result } from '@cursor-rules-todoapp/common';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto } from '../todo/todo';
 import { SortTodoUseCase } from './sort-todo';
-import { InMemoryTodoRepository } from '../repositories/in-memory-todo-repository';
-import { Todo } from '../todo/todo';
 
 describe('SortTodoUseCase', () => {
-  test('作成日時でソートできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new SortTodoUseCase(repository);
+  const mockTodoRepository: TodoRepository = {
+    findAll: vi.fn(),
+    findById: vi.fn(),
+    save: vi.fn(),
+    delete: vi.fn(),
+    transaction: vi.fn(),
+  };
 
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
-      priority: 'high',
-    });
-    await repository.save(todo1);
+  const useCase = new SortTodoUseCase(mockTodoRepository);
 
-    // 1秒待機
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const todo2 = Todo.create({
-      title: 'タスク2',
-      priority: 'medium',
-    });
-    await repository.save(todo2);
-
-    // 昇順でソート
-    const ascResult = await useCase.execute({
-      sortBy: 'createdAt',
-      order: 'asc',
-    });
-    expect(ascResult.isOk()).toBe(true);
-    if (ascResult.isOk()) {
-      expect(ascResult.value[0].title).toBe('タスク1');
-      expect(ascResult.value[1].title).toBe('タスク2');
-    }
-
-    // 降順でソート
-    const descResult = await useCase.execute({
-      sortBy: 'createdAt',
-      order: 'desc',
-    });
-    expect(descResult.isOk()).toBe(true);
-    if (descResult.isOk()) {
-      expect(descResult.value[0].title).toBe('タスク2');
-      expect(descResult.value[1].title).toBe('タスク1');
-    }
-  });
-
-  test('優先度でソートできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new SortTodoUseCase(repository);
-
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
+  const mockTodos: TodoDto[] = [
+    {
+      id: 'test-id-1',
+      title: 'テストタスク1',
+      description: 'テストの説明1',
+      status: 'pending',
       priority: 'low',
-    });
-    await repository.save(todo1);
-
-    const todo2 = Todo.create({
-      title: 'タスク2',
-      priority: 'high',
-    });
-    await repository.save(todo2);
-
-    const todo3 = Todo.create({
-      title: 'タスク3',
+      dueDate: new Date('2024-03-21'),
+      completedAt: undefined,
+      createdAt: new Date('2024-03-21T00:00:00.000Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'test-id-2',
+      title: 'テストタスク2',
+      description: 'テストの説明2',
+      status: 'completed',
       priority: 'medium',
-    });
-    await repository.save(todo3);
+      dueDate: new Date('2024-03-22'),
+      completedAt: new Date(),
+      createdAt: new Date('2024-03-22T00:00:00.000Z'),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'test-id-3',
+      title: 'テストタスク3',
+      description: 'テストの説明3',
+      status: 'pending',
+      priority: 'high',
+      dueDate: undefined,
+      completedAt: undefined,
+      createdAt: new Date('2024-03-23T00:00:00.000Z'),
+      updatedAt: new Date(),
+    },
+  ];
 
-    // 昇順でソート（low -> medium -> high）
-    const ascResult = await useCase.execute({
-      sortBy: 'priority',
-      order: 'asc',
-    });
-    expect(ascResult.isOk()).toBe(true);
-    if (ascResult.isOk()) {
-      expect(ascResult.value[0].title).toBe('タスク1');
-      expect(ascResult.value[1].title).toBe('タスク3');
-      expect(ascResult.value[2].title).toBe('タスク2');
-    }
-
-    // 降順でソート（high -> medium -> low）
-    const descResult = await useCase.execute({
-      sortBy: 'priority',
-      order: 'desc',
-    });
-    expect(descResult.isOk()).toBe(true);
-    if (descResult.isOk()) {
-      expect(descResult.value[0].title).toBe('タスク2');
-      expect(descResult.value[1].title).toBe('タスク3');
-      expect(descResult.value[2].title).toBe('タスク1');
-    }
+  beforeEach(() => {
+    vi.mocked(mockTodoRepository.findAll).mockResolvedValue(mockTodos);
   });
 
-  test('期限でソートできる', async () => {
-    const repository = new InMemoryTodoRepository();
-    const useCase = new SortTodoUseCase(repository);
+  describe('作成日時でソート', () => {
+    it('正常系: 作成日時の昇順でソートできること', async () => {
+      // Arrange
+      const input = {
+        sortBy: 'createdAt' as const,
+        order: 'asc' as const,
+      };
 
-    // テスト用のTodoを作成
-    const todo1 = Todo.create({
-      title: 'タスク1',
-      priority: 'high',
-      dueDate: new Date('2024-01-01'),
-    });
-    await repository.save(todo1);
+      // Act
+      const result = await useCase.execute(input);
 
-    const todo2 = Todo.create({
-      title: 'タスク2',
-      priority: 'medium',
-      dueDate: new Date('2024-06-01'),
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(3);
+        expect(result.value[0].id).toBe('test-id-1');
+        expect(result.value[1].id).toBe('test-id-2');
+        expect(result.value[2].id).toBe('test-id-3');
+      }
     });
-    await repository.save(todo2);
 
-    const todo3 = Todo.create({
-      title: 'タスク3',
-      priority: 'low',
-    });
-    await repository.save(todo3);
+    it('正常系: 作成日時の降順でソートできること', async () => {
+      // Arrange
+      const input = {
+        sortBy: 'createdAt' as const,
+        order: 'desc' as const,
+      };
 
-    // 昇順でソート（期限なし -> 期限早い -> 期限遅い）
-    const ascResult = await useCase.execute({
-      sortBy: 'dueDate',
-      order: 'asc',
-    });
-    expect(ascResult.isOk()).toBe(true);
-    if (ascResult.isOk()) {
-      expect(ascResult.value[0].title).toBe('タスク3');
-      expect(ascResult.value[1].title).toBe('タスク1');
-      expect(ascResult.value[2].title).toBe('タスク2');
-    }
+      // Act
+      const result = await useCase.execute(input);
 
-    // 降順でソート（期限遅い -> 期限早い -> 期限なし）
-    const descResult = await useCase.execute({
-      sortBy: 'dueDate',
-      order: 'desc',
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(3);
+        expect(result.value[0].id).toBe('test-id-3');
+        expect(result.value[1].id).toBe('test-id-2');
+        expect(result.value[2].id).toBe('test-id-1');
+      }
     });
-    expect(descResult.isOk()).toBe(true);
-    if (descResult.isOk()) {
-      expect(descResult.value[0].title).toBe('タスク2');
-      expect(descResult.value[1].title).toBe('タスク1');
-      expect(descResult.value[2].title).toBe('タスク3');
+  });
+
+  describe('優先度でソート', () => {
+    it('正常系: 優先度の昇順でソートできること', async () => {
+      // Arrange
+      const input = {
+        sortBy: 'priority' as const,
+        order: 'asc' as const,
+      };
+
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(3);
+        expect(result.value[0].priority).toBe('low');
+        expect(result.value[1].priority).toBe('medium');
+        expect(result.value[2].priority).toBe('high');
+      }
+    });
+
+    it('正常系: 優先度の降順でソートできること', async () => {
+      // Arrange
+      const input = {
+        sortBy: 'priority' as const,
+        order: 'desc' as const,
+      };
+
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(3);
+        expect(result.value[0].priority).toBe('high');
+        expect(result.value[1].priority).toBe('medium');
+        expect(result.value[2].priority).toBe('low');
+      }
+    });
+  });
+
+  describe('期限でソート', () => {
+    it('正常系: 期限の昇順でソートできること', async () => {
+      // Arrange
+      const input = {
+        sortBy: 'dueDate' as const,
+        order: 'asc' as const,
+      };
+
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(3);
+        expect(result.value[0].id).toBe('test-id-3'); // 期限なし
+        expect(result.value[1].id).toBe('test-id-1'); // 2024-03-21
+        expect(result.value[2].id).toBe('test-id-2'); // 2024-03-22
+      }
+    });
+
+    it('正常系: 期限の降順でソートできること', async () => {
+      // Arrange
+      const input = {
+        sortBy: 'dueDate' as const,
+        order: 'desc' as const,
+      };
+
+      // Act
+      const result = await useCase.execute(input);
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(3);
+        expect(result.value[0].id).toBe('test-id-2'); // 2024-03-22
+        expect(result.value[1].id).toBe('test-id-1'); // 2024-03-21
+        expect(result.value[2].id).toBe('test-id-3'); // 期限なし
+      }
+    });
+  });
+
+  it('異常系: リポジトリでエラーが発生した場合はエラーを返すこと', async () => {
+    // Arrange
+    const input = {
+      sortBy: 'createdAt' as const,
+      order: 'asc' as const,
+    };
+
+    vi.mocked(mockTodoRepository.findAll).mockRejectedValue(new Error('Repository error'));
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('Repository error');
     }
   });
-}); 
+});

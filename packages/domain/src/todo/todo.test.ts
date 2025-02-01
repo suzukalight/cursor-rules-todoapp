@@ -139,4 +139,4 @@ describe('Todo', () => {
 
     expect(json).toEqual(todo.toDto());
   });
-}); 
+});

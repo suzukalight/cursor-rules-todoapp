@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { DeleteTodoUseCase } from './delete-todo';
 import { InMemoryTodoRepository } from '../repositories/in-memory-todo-repository';
 import { Todo } from '../todo/todo';
+import { DeleteTodoUseCase } from './delete-todo';
 
 describe('DeleteTodoUseCase', () => {
   test('Todoを削除できる', async () => {
@@ -39,4 +39,4 @@ describe('DeleteTodoUseCase', () => {
       expect(result.error.message).toBe('Todo not found');
     }
   });
-}); 
+});
