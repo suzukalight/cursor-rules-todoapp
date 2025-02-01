@@ -1,34 +1,32 @@
-import type { Todo, TodoId } from '../entities/todo';
+import { Result } from '@cursor-rules-todoapp/common';
+import type { Todo } from '../todo/todo';
 import type { TodoRepository } from '../repositories/todo-repository';
 
-export type TodoStatusAction = 'complete' | 'cancel';
-
-export interface ChangeTodoStatusInput {
-  id: TodoId;
-  action: TodoStatusAction;
-}
+type ChangeTodoStatusInput = {
+  id: string;
+  status: 'completed' | 'pending';
+};
 
 export class ChangeTodoStatusUseCase {
-  constructor(private readonly todoRepository: TodoRepository) {}
+  constructor(private readonly repository: TodoRepository) {}
 
-  async execute(input: ChangeTodoStatusInput): Promise<Todo> {
-    const todo = await this.todoRepository.findById(input.id);
+  async execute(input: ChangeTodoStatusInput): Promise<Result<Todo, Error>> {
+    const todo = await this.repository.findById(input.id);
     if (!todo) {
-      throw new Error(`Todo not found: ${input.id}`);
+      return Result.err(new Error('Todo not found'));
     }
 
-    switch (input.action) {
-      case 'complete':
+    try {
+      if (input.status === 'completed') {
         todo.complete();
-        break;
-      case 'cancel':
+      } else {
         todo.cancel();
-        break;
-      default:
-        throw new Error(`Invalid action: ${input.action}`);
-    }
+      }
 
-    await this.todoRepository.save(todo);
-    return todo;
+      const savedTodo = await this.repository.save(todo);
+      return Result.ok(savedTodo);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
+    }
   }
 }

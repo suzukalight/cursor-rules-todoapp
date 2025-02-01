@@ -1,29 +1,42 @@
-import type { Todo, TodoId } from '../entities/todo';
+import { Result } from '@cursor-rules-todoapp/common';
+import type { Todo } from '../todo/todo';
 import type { TodoRepository } from '../repositories/todo-repository';
 
-export interface UpdateTodoInput {
-  id: TodoId;
+type UpdateTodoInput = {
+  id: string;
   title?: string;
   description?: string;
-}
+  priority?: 'high' | 'medium' | 'low';
+  dueDate?: Date | undefined;
+};
 
 export class UpdateTodoUseCase {
-  constructor(private readonly todoRepository: TodoRepository) {}
+  constructor(private readonly repository: TodoRepository) {}
 
-  async execute(input: UpdateTodoInput): Promise<Todo> {
-    const todo = await this.todoRepository.findById(input.id);
+  async execute(input: UpdateTodoInput): Promise<Result<Todo, Error>> {
+    const todo = await this.repository.findById(input.id);
     if (!todo) {
-      throw new Error(`Todo not found: ${input.id}`);
+      return Result.err(new Error('Todo not found'));
     }
 
-    if (input.title) {
-      todo.updateTitle(input.title);
-    }
-    if (input.description !== undefined) {
-      todo.updateDescription(input.description);
-    }
+    try {
+      if (input.title !== undefined) {
+        todo.updateTitle(input.title);
+      }
+      if (input.description !== undefined) {
+        todo.updateDescription(input.description);
+      }
+      if (input.priority !== undefined) {
+        todo.updatePriority(input.priority);
+      }
+      if ('dueDate' in input) {
+        todo.updateDueDate(input.dueDate);
+      }
 
-    await this.todoRepository.save(todo);
-    return todo;
+      const savedTodo = await this.repository.save(todo);
+      return Result.ok(savedTodo);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
+    }
   }
 }

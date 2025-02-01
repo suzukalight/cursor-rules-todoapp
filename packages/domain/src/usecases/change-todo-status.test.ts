@@ -1,69 +1,65 @@
-import { describe, expect, it, vi } from 'vitest';
-import { Todo } from '../entities/todo';
-import type { TodoRepository } from '../repositories/todo-repository';
+import { describe, expect, test } from 'vitest';
+import { Todo } from '../todo/todo';
 import { ChangeTodoStatusUseCase } from './change-todo-status';
+import { InMemoryTodoRepository } from '../repositories/in-memory-todo-repository';
 
 describe('ChangeTodoStatusUseCase', () => {
-  const mockTodoRepository: TodoRepository = {
-    save: vi.fn(),
-    findById: vi.fn(),
-    findAll: vi.fn(),
-    delete: vi.fn(),
-    transaction: vi.fn(),
-  };
+  test('Todoを完了状態に変更できる', async () => {
+    const todo = Todo.create({ title: 'テストタスク' });
+    const repository = new InMemoryTodoRepository([todo]);
+    const useCase = new ChangeTodoStatusUseCase(repository);
 
-  const useCase = new ChangeTodoStatusUseCase(mockTodoRepository);
+    const result = await useCase.execute({ id: todo.id, status: 'completed' });
 
-  it('Todoを完了状態に変更できる', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'pending' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
-
-    await useCase.execute({ id: todo.id, action: 'complete' });
-
-    expect(mockTodoRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'completed',
-        completedAt: expect.any(Date),
-      })
-    );
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.status).toBe('completed');
+      expect(result.value.completedAt).toBeDefined();
+    }
   });
 
-  it('Todoをキャンセル状態に変更できる', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'pending' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  test('Todoを未完了状態に変更できる', async () => {
+    const todo = Todo.create({ title: 'テストタスク' });
+    todo.complete();
+    const repository = new InMemoryTodoRepository([todo]);
+    const useCase = new ChangeTodoStatusUseCase(repository);
 
-    await useCase.execute({ id: todo.id, action: 'cancel' });
+    const result = await useCase.execute({ id: todo.id, status: 'pending' });
 
-    expect(mockTodoRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'cancelled',
-      })
-    );
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value.status).toBe('pending');
+      expect(result.value.completedAt).toBeUndefined();
+    }
   });
 
-  it('存在しないTodoの場合はエラーを返す', async () => {
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(null);
+  test('存在しないTodoの場合はエラーを返す', async () => {
+    const repository = new InMemoryTodoRepository([]);
+    const useCase = new ChangeTodoStatusUseCase(repository);
 
-    await expect(useCase.execute({ id: 'non-existent-id', action: 'complete' })).rejects.toThrow(
-      'Todo not found'
-    );
+    const result = await useCase.execute({ id: '123', status: 'completed' });
+
+    expect(result.isErr()).toBe(true);
   });
 
-  it('既に完了済みのTodoを完了しようとするとエラーを返す', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'completed' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  test('既に完了済みのTodoを完了しようとするとエラーを返す', async () => {
+    const todo = Todo.create({ title: 'テストタスク' });
+    todo.complete();
+    const repository = new InMemoryTodoRepository([todo]);
+    const useCase = new ChangeTodoStatusUseCase(repository);
 
-    await expect(useCase.execute({ id: todo.id, action: 'complete' })).rejects.toThrow(
-      'Todo is already completed'
-    );
+    const result = await useCase.execute({ id: todo.id, status: 'completed' });
+
+    expect(result.isErr()).toBe(true);
   });
 
-  it('既にキャンセル済みのTodoをキャンセルしようとするとエラーを返す', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'cancelled' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  test('既に未完了のTodoを未完了にしようとするとエラーを返す', async () => {
+    const todo = Todo.create({ title: 'テストタスク' });
+    const repository = new InMemoryTodoRepository([todo]);
+    const useCase = new ChangeTodoStatusUseCase(repository);
 
-    await expect(useCase.execute({ id: todo.id, action: 'cancel' })).rejects.toThrow(
-      'Todo is already cancelled'
-    );
+    const result = await useCase.execute({ id: todo.id, status: 'pending' });
+
+    expect(result.isErr()).toBe(true);
   });
 });

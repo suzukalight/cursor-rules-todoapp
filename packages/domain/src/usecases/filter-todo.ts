@@ -1,0 +1,50 @@
+import { Result } from '@cursor-rules-todoapp/common';
+import type { Todo, TodoPriority, TodoStatus } from '../todo/todo';
+import type { TodoRepository } from '../repositories/todo-repository';
+
+export interface FilterTodoInput {
+  status?: TodoStatus;
+  priority?: TodoPriority;
+  dueDateBefore?: Date;
+  dueDateAfter?: Date;
+}
+
+export class FilterTodoUseCase {
+  constructor(private readonly todoRepository: TodoRepository) {}
+
+  async execute(input: FilterTodoInput): Promise<Result<Todo[], Error>> {
+    try {
+      const todos = await this.todoRepository.findAll();
+      const filteredTodos = todos.filter((todo) => {
+        // ステータスでフィルタリング
+        if (input.status && todo.status !== input.status) {
+          return false;
+        }
+
+        // 優先度でフィルタリング
+        if (input.priority && todo.priority !== input.priority) {
+          return false;
+        }
+
+        // 期限でフィルタリング
+        if (input.dueDateBefore) {
+          if (!todo.dueDate || todo.dueDate > input.dueDateBefore) {
+            return false;
+          }
+        }
+
+        if (input.dueDateAfter) {
+          if (!todo.dueDate || todo.dueDate < input.dueDateAfter) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      return Result.ok(filteredTodos);
+    } catch (error) {
+      return Result.err(error instanceof Error ? error : new Error('Unknown error'));
+    }
+  }
+} 
