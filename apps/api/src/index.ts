@@ -30,5 +30,5 @@ app.use(
 // サーバーの起動
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.info(`Server is running on http://localhost:${port}`);
 });

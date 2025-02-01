@@ -1,6 +1,6 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import type { TodoRepository } from '@cursor-rules-todoapp/domain/src/repositories/todo-repository';
+import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import type { TodoUseCase } from './todo';
 
 export class TodoUseCaseImpl implements TodoUseCase {
