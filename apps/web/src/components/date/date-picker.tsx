@@ -1,9 +1,6 @@
-import { Button } from '@cursor-rules-todoapp/ui';
 import { Calendar } from '@cursor-rules-todoapp/ui';
 import { cn } from '@cursor-rules-todoapp/ui';
-import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Calendar as CalendarIcon } from 'lucide-react';
 
 interface DatePickerProps {
   selected?: Date;

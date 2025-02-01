@@ -12,10 +12,9 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@cursor-rules-todoapp/ui';
 import { cn } from '@cursor-rules-todoapp/ui';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { AlertCircle, Calendar, Check, Flag, X } from 'lucide-react';
 import { useState } from 'react';
 import { DatePicker } from '../date/date-picker';
