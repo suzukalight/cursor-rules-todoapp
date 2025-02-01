@@ -24,7 +24,7 @@ app.use(
   createExpressMiddleware({
     router: appRouter({ todoUseCase }),
     createContext: (opts) => createContext(opts, { todoUseCase }),
-  }),
+  })
 );
 
 // サーバーの起動

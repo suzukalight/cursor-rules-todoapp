@@ -39,13 +39,15 @@ describe('API統合テスト', () => {
     await testDb.setup();
 
     const app = express();
-    todoRepository = new TodoRepository(new PrismaClient({
-      datasources: {
-        db: {
-          url: testDb.getDatabaseUrl(),
+    todoRepository = new TodoRepository(
+      new PrismaClient({
+        datasources: {
+          db: {
+            url: testDb.getDatabaseUrl(),
+          },
         },
-      },
-    }));
+      })
+    );
     const todoUseCase = new TodoUseCaseImpl(todoRepository);
     const router = appRouter({ todoUseCase });
 
