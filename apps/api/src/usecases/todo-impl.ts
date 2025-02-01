@@ -1,6 +1,6 @@
 import { Result } from '@cursor-rules-todoapp/common';
-import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain';
-import type { TodoRepository } from '@cursor-rules-todoapp/domain';
+import { Todo, type TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
+import type { TodoRepository } from '@cursor-rules-todoapp/domain/src/repositories/todo-repository';
 import type { TodoUseCase } from './todo';
 
 export class TodoUseCaseImpl implements TodoUseCase {
@@ -34,8 +34,12 @@ export class TodoUseCaseImpl implements TodoUseCase {
     dueDate?: Date;
   }): Promise<Result<TodoDto, Error>> {
     try {
-      const todo = Todo.create(input);
-      const saved = await this.todoRepository.save(todo.toDto());
+      const todo = Todo.create({
+        ...input,
+        priority: input.priority ?? 'medium',
+      });
+      const todoDto = todo.toDto();
+      const saved = await this.todoRepository.save(todoDto);
       return Result.ok(saved);
     } catch (error) {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
@@ -57,11 +61,12 @@ export class TodoUseCaseImpl implements TodoUseCase {
 
       const todo = Todo.reconstruct(found);
       if (input.title) todo.updateTitle(input.title);
-      if ('description' in input) todo.updateDescription(input.description);
+      if ('description' in input) todo.updateDescription(input.description ?? '');
       if (input.priority) todo.updatePriority(input.priority);
       if ('dueDate' in input) todo.updateDueDate(input.dueDate);
 
-      const saved = await this.todoRepository.save(todo.toDto());
+      const todoDto = todo.toDto();
+      const saved = await this.todoRepository.save(todoDto);
       return Result.ok(saved);
     } catch (error) {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
@@ -87,7 +92,8 @@ export class TodoUseCaseImpl implements TodoUseCase {
       const todo = Todo.reconstruct(found);
       todo.complete();
 
-      const saved = await this.todoRepository.save(todo.toDto());
+      const todoDto = todo.toDto();
+      const saved = await this.todoRepository.save(todoDto);
       return Result.ok(saved);
     } catch (error) {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
@@ -104,7 +110,8 @@ export class TodoUseCaseImpl implements TodoUseCase {
       const todo = Todo.reconstruct(found);
       todo.cancel();
 
-      const saved = await this.todoRepository.save(todo.toDto());
+      const todoDto = todo.toDto();
+      const saved = await this.todoRepository.save(todoDto);
       return Result.ok(saved);
     } catch (error) {
       return Result.err(error instanceof Error ? error : new Error('Unknown error'));
@@ -119,7 +126,7 @@ export class TodoUseCaseImpl implements TodoUseCase {
   }): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
-      const filteredTodos = todos.filter((todo) => {
+      const filteredTodos = todos.filter((todo: TodoDto) => {
         if (input.status && todo.status !== input.status) {
           return false;
         }
@@ -146,7 +153,7 @@ export class TodoUseCaseImpl implements TodoUseCase {
   }): Promise<Result<TodoDto[], Error>> {
     try {
       const todos = await this.todoRepository.findAll();
-      const sortedTodos = [...todos].sort((a, b) => {
+      const sortedTodos = [...todos].sort((a: TodoDto, b: TodoDto) => {
         switch (input.sortBy) {
           case 'createdAt':
             return input.order === 'asc'
