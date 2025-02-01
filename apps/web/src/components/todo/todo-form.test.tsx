@@ -34,19 +34,19 @@ const mockMutation = {
 
 describe('TodoForm', () => {
   it('フォームを表示できる', () => {
-    // @ts-ignore: FIXME: tRPCの型定義の問題を後で修正
+    // @ts-expect-error: tRPCの型定義の問題を後で修正
     vi.mocked(trpc.todo.create.useMutation).mockReturnValue(mockMutation);
 
     render(<TodoForm />);
 
     expect(screen.getByLabelText('タイトル')).toBeInTheDocument();
     expect(screen.getByLabelText('説明')).toBeInTheDocument();
-    expect(screen.getByText('Todoを作成')).toBeInTheDocument();
+    expect(screen.getByText('作成')).toBeInTheDocument();
   });
 
   it('フォームを送信できる', async () => {
     const mockMutateAsync = vi.fn();
-    // @ts-ignore: FIXME: tRPCの型定義の問題を後で修正
+    // @ts-expect-error: tRPCの型定義の問題を後で修正
     vi.mocked(trpc.todo.create.useMutation).mockReturnValue({
       ...mockMutation,
       mutateAsync: mockMutateAsync,
@@ -56,7 +56,7 @@ describe('TodoForm', () => {
 
     const titleInput = screen.getByLabelText('タイトル') as HTMLInputElement;
     const descriptionInput = screen.getByLabelText('説明') as HTMLTextAreaElement;
-    const submitButton = screen.getByText('Todoを作成');
+    const submitButton = screen.getByText('作成');
 
     fireEvent.change(titleInput, { target: { value: 'テストTodo' } });
     fireEvent.change(descriptionInput, { target: { value: 'テストの説明' } });
@@ -66,13 +66,12 @@ describe('TodoForm', () => {
       expect(mockMutateAsync).toHaveBeenCalledWith({
         title: 'テストTodo',
         description: 'テストの説明',
-        priority: 'medium',
       });
     });
   });
 
   it('送信中は送信ボタンを無効化する', () => {
-    // @ts-ignore: FIXME: tRPCの型定義の問題を後で修正
+    // @ts-expect-error: tRPCの型定義の問題を後で修正
     vi.mocked(trpc.todo.create.useMutation).mockReturnValue({
       ...mockMutation,
       isLoading: true,
