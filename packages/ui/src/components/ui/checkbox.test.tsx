@@ -6,15 +6,14 @@ import { Checkbox } from './checkbox';
 describe('Checkbox', () => {
   it('デフォルトでは未チェック状態', () => {
     render(<Checkbox />);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-white');
-    expect(button).not.toHaveClass('bg-green-600');
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
   });
 
   it('チェック状態の場合は緑色の背景が表示される', () => {
     render(<Checkbox checked />);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-green-600');
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toBeChecked();
   });
 
   it('チェック状態の場合はチェックマークが表示される', () => {
@@ -26,7 +25,7 @@ describe('Checkbox', () => {
     const onCheckedChange = vi.fn();
     render(<Checkbox onCheckedChange={onCheckedChange} />);
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('checkbox'));
     expect(onCheckedChange).toHaveBeenCalledWith(true);
   });
 
@@ -34,7 +33,7 @@ describe('Checkbox', () => {
     const onCheckedChange = vi.fn();
     render(<Checkbox checked onCheckedChange={onCheckedChange} />);
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('checkbox'));
     expect(onCheckedChange).toHaveBeenCalledWith(false);
   });
 });

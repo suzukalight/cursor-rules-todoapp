@@ -33,7 +33,7 @@ describe('TodoItem', () => {
     const onToggle = vi.fn();
     render(<TodoItem title="テストタスク" onToggle={onToggle} />);
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getByRole('checkbox'));
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
 });
