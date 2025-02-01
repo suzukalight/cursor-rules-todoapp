@@ -16,7 +16,7 @@ export class TestDatabase {
     this.prisma = new PrismaClient({
       datasources: {
         db: {
-          url: `file:${this.dbPath}?mode=memory&cache=shared&journal_mode=WAL&synchronous=NORMAL`,
+          url: `file:${this.dbPath}`,
         },
       },
     });
@@ -27,7 +27,7 @@ export class TestDatabase {
     const prisma = new PrismaClient({
       datasources: {
         db: {
-          url: `file:${TEMPLATE_DB_PATH}?mode=memory&cache=shared&journal_mode=WAL&synchronous=NORMAL`,
+          url: `file:${TEMPLATE_DB_PATH}`,
         },
       },
     });
@@ -41,13 +41,15 @@ export class TestDatabase {
     try {
       unlinkSync(TEMPLATE_DB_PATH);
       unlinkSync(`${TEMPLATE_DB_PATH}-journal`);
+      unlinkSync(`${TEMPLATE_DB_PATH}-wal`);
+      unlinkSync(`${TEMPLATE_DB_PATH}-shm`);
     } catch {
       // ファイルが存在しない場合は無視
     }
 
     try {
       // スキーマを適用
-      execSync(`cd ${TEST_DB_DIR} && npx prisma migrate deploy`, {
+      execSync(`cd ${TEST_DB_DIR} && npx prisma migrate reset --force`, {
         env: {
           ...process.env,
           DATABASE_URL: `file:${TEMPLATE_DB_PATH}`,
@@ -81,6 +83,8 @@ export class TestDatabase {
     try {
       unlinkSync(this.dbPath);
       unlinkSync(`${this.dbPath}-journal`);
+      unlinkSync(`${this.dbPath}-wal`);
+      unlinkSync(`${this.dbPath}-shm`);
     } catch {
       // ファイルが存在しない場合は無視
     }
@@ -120,6 +124,8 @@ export class TestDatabase {
     try {
       unlinkSync(this.dbPath);
       unlinkSync(`${this.dbPath}-journal`);
+      unlinkSync(`${this.dbPath}-wal`);
+      unlinkSync(`${this.dbPath}-shm`);
     } catch {
       // ファイルが存在しない場合は無視
     }
