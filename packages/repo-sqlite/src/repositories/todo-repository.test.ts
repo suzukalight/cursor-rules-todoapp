@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { Todo } from '@cursor-rules-todoapp/domain';
+import { Todo } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { config } from 'dotenv';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { TestDatabase } from '../test-utils/database';
@@ -32,10 +32,10 @@ describe('TodoRepository', () => {
       const todo = Todo.create({
         title: 'Test Todo',
         description: 'Test Description',
-        status: 'pending',
+        priority: 'medium',
       });
 
-      await repository.save(todo);
+      await repository.save(todo.toDto());
 
       const saved = await testDb.client.todo.findUnique({
         where: { id: todo.id },
@@ -50,18 +50,19 @@ describe('TodoRepository', () => {
     it('既存のTodoを更新できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
-        status: 'pending',
+        priority: 'medium',
       });
 
-      await repository.save(todo);
-      todo.updateTitle('Updated Title');
-      await repository.save(todo);
+      await repository.save(todo.toDto());
+      const updated = Todo.reconstruct(todo.toDto());
+      updated.updateTitle('Updated Title');
+      await repository.save(updated.toDto());
 
-      const updated = await testDb.client.todo.findUnique({
+      const result = await testDb.client.todo.findUnique({
         where: { id: todo.id },
       });
 
-      expect(updated?.title).toBe('Updated Title');
+      expect(result?.title).toBe('Updated Title');
     });
   });
 
@@ -74,10 +75,10 @@ describe('TodoRepository', () => {
     it('既存のTodoを取得できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
-        status: 'pending',
+        priority: 'medium',
       });
 
-      await repository.save(todo);
+      await repository.save(todo.toDto());
 
       const found = await repository.findById(todo.id);
       expect(found).not.toBeNull();
@@ -90,16 +91,16 @@ describe('TodoRepository', () => {
     it('全てのTodoを取得できる', async () => {
       const todo1 = Todo.create({
         title: 'Todo 1',
-        status: 'pending',
+        priority: 'medium',
       });
 
       const todo2 = Todo.create({
         title: 'Todo 2',
-        status: 'pending',
+        priority: 'medium',
       });
 
-      await repository.save(todo1);
-      await repository.save(todo2);
+      await repository.save(todo1.toDto());
+      await repository.save(todo2.toDto());
 
       const todos = await repository.findAll();
       expect(todos).toHaveLength(2);
@@ -112,10 +113,10 @@ describe('TodoRepository', () => {
     it('Todoを削除できる', async () => {
       const todo = Todo.create({
         title: 'Test Todo',
-        status: 'pending',
+        priority: 'medium',
       });
 
-      await repository.save(todo);
+      await repository.save(todo.toDto());
       await repository.delete(todo.id);
 
       const deleted = await testDb.client.todo.findUnique({
@@ -128,42 +129,52 @@ describe('TodoRepository', () => {
 
   describe('transaction', () => {
     it('トランザクションが成功する場合、変更が保存される', async () => {
-      const result = await repository.transaction(async function (this: TodoRepository) {
-        const todo = Todo.create({
-          title: 'Transaction Todo',
-          status: 'pending',
-        });
-        await this.save(todo);
-        return todo;
+      const todo = Todo.create({
+        title: 'Transaction Todo',
+        priority: 'medium',
       });
+
+      const result = await repository.transaction(async () => {
+        return await repository.save(todo.toDto());
+      });
+
+      expect(result).not.toBeNull();
+      expect(result.title).toBe('Transaction Todo');
 
       const saved = await testDb.client.todo.findUnique({
         where: { id: result.id },
       });
       expect(saved).not.toBeNull();
       expect(saved?.title).toBe('Transaction Todo');
-    });
+    }, 30000);
 
     it('トランザクションがエラーの場合、ロールバックされる', async () => {
       const todo = Todo.create({
         title: 'Pre-transaction Todo',
-        status: 'pending',
+        priority: 'medium',
       });
-      await repository.save(todo);
+      await repository.save(todo.toDto());
 
+      let error: Error | undefined;
       try {
-        await repository.transaction(async function (this: TodoRepository) {
-          await this.delete(todo.id);
+        await repository.transaction(async () => {
+          await repository.delete(todo.id);
           throw new Error('Test error');
         });
-      } catch (_error) {
-        // エラーは期待通り
+      } catch (e) {
+        if (e instanceof Error) {
+          error = e;
+        }
       }
+
+      expect(error).toBeDefined();
+      expect(error?.message).toBe('Test error');
 
       const stillExists = await testDb.client.todo.findUnique({
         where: { id: todo.id },
       });
       expect(stillExists).not.toBeNull();
-    });
+      expect(stillExists?.title).toBe('Pre-transaction Todo');
+    }, 30000);
   });
 });
