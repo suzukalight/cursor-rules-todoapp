@@ -25,7 +25,7 @@ describe('Checkbox', () => {
   it('クリックするとonCheckedChangeが呼ばれる', async () => {
     const onCheckedChange = vi.fn();
     render(<Checkbox onCheckedChange={onCheckedChange} />);
-    
+
     await userEvent.click(screen.getByRole('button'));
     expect(onCheckedChange).toHaveBeenCalledWith(true);
   });
@@ -33,8 +33,8 @@ describe('Checkbox', () => {
   it('チェック状態でクリックするとonCheckedChangeがfalseで呼ばれる', async () => {
     const onCheckedChange = vi.fn();
     render(<Checkbox checked onCheckedChange={onCheckedChange} />);
-    
+
     await userEvent.click(screen.getByRole('button'));
     expect(onCheckedChange).toHaveBeenCalledWith(false);
   });
-}); 
+});

@@ -22,4 +22,4 @@ describe('TodoList', () => {
     render(<TodoList>テストコンテンツ</TodoList>);
     expect(screen.getByText('テストコンテンツ')).toBeInTheDocument();
   });
-}); 
+});

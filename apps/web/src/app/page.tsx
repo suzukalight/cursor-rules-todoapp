@@ -2,8 +2,7 @@
 
 import type { Todo, TodoStatus } from '@cursor-rules-todoapp/common';
 import type { TodoDto } from '@cursor-rules-todoapp/domain';
-import { Button } from '@cursor-rules-todoapp/ui';
-import { Plus } from 'lucide-react';
+import { AddTodoButton } from '@cursor-rules-todoapp/ui';
 import { useEffect, useState } from 'react';
 import { ThemeToggle } from '../components/theme/theme-toggle';
 import { TodoFilter } from '../components/todo/todo-filter';
@@ -63,25 +62,6 @@ export default function TodoPage() {
     },
   });
 
-  const updateTodoMutation = trpc.todo.update.useMutation({
-    onSuccess: async (data) => {
-      const todoData = ('props' in data ? data.props : data) as TodoDto;
-      const updatedTodo: Todo = {
-        id: todoData.id,
-        title: todoData.title,
-        description: todoData.description,
-        status: todoData.status,
-        priority: todoData.priority,
-        dueDate: todoData.dueDate ? new Date(todoData.dueDate) : undefined,
-        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
-        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
-        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
-      };
-      setTodos((prev) => prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo)));
-      await utils.todo.findAll.invalidate();
-    },
-  });
-
   const changeTodoStatusMutation = trpc.todo.changeStatus.useMutation({
     onSuccess: async (data) => {
       const todoData = ('props' in data ? data.props : data) as TodoDto;
@@ -110,17 +90,6 @@ export default function TodoPage() {
       });
     } catch (error) {
       console.error('Failed to create todo:', error);
-    }
-  };
-
-  const handleUpdateTitle = async (id: string, title: string) => {
-    try {
-      await updateTodoMutation.mutateAsync({
-        id,
-        title,
-      });
-    } catch (error) {
-      console.error('Failed to update todo:', error);
     }
   };
 
@@ -154,19 +123,12 @@ export default function TodoPage() {
     });
 
   return (
-    <main className="container mx-auto p-4">
+    <main className="container mx-auto p-4 max-w-4xl">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold dark:text-gray-100">Todo List</h1>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button
-            onClick={handleCreateTodo}
-            className="h-8 rounded-lg"
-            data-testid="create-todo-button"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            新規作成
-          </Button>
+          <AddTodoButton onClick={handleCreateTodo} />
         </div>
       </div>
 
@@ -179,13 +141,7 @@ export default function TodoPage() {
         onSortByChange={setSortBy}
       />
 
-      <TodoList
-        todos={filteredTodos}
-        onUpdateTitle={handleUpdateTitle}
-        onUpdateStatus={handleUpdateStatus}
-        onUpdatePriority={async () => {}}
-        onUpdateDueDate={async () => {}}
-      />
+      <TodoList todos={filteredTodos} onUpdateStatus={handleUpdateStatus} />
     </main>
   );
 }

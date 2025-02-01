@@ -36,4 +36,4 @@ export const Checkbox = ({ checked = false, onCheckedChange }: CheckboxProps) =>
       </div>
     </div>
   );
-}; 
+};

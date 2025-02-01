@@ -32,8 +32,8 @@ describe('TodoItem', () => {
   it('チェックボックスをクリックするとonToggleが呼ばれる', async () => {
     const onToggle = vi.fn();
     render(<TodoItem title="テストタスク" onToggle={onToggle} />);
-    
+
     await userEvent.click(screen.getByRole('button'));
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
-}); 
+});

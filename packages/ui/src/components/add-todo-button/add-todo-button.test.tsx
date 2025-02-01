@@ -17,8 +17,8 @@ describe('AddTodoButton', () => {
   it('クリックするとonClickが呼ばれる', async () => {
     const onClick = vi.fn();
     render(<AddTodoButton onClick={onClick} />);
-    
+
     await userEvent.click(screen.getByRole('button'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
-}); 
+});

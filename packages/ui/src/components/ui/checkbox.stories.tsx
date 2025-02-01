@@ -24,4 +24,4 @@ export const WithOnChange: Story = {
   args: {
     onCheckedChange: (checked) => alert(`チェック状態が${checked}に変更されました`),
   },
-}; 
+};

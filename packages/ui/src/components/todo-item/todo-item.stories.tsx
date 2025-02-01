@@ -51,4 +51,4 @@ export const LongTitle: Story = {
     time: '15:00',
     tag: 'テスト',
   },
-}; 
+};

@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Preview } from '@storybook/react';
+import React from 'react';
 import '../src/styles.css';
 
 const preview: Preview = {
@@ -29,4 +29,4 @@ const preview: Preview = {
   ],
 };
 
-export default preview; 
+export default preview;

@@ -18,4 +18,4 @@ export const WithOnClick: Story = {
   args: {
     onClick: () => alert('タスクを追加ボタンがクリックされました'),
   },
-}; 
+};

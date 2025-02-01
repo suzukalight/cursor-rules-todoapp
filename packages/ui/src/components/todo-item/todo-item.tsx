@@ -32,15 +32,9 @@ export const TodoItem = ({
             {title}
           </span>
           {time && (
-            <span className="text-sm text-green-600 transition-opacity duration-200">
-              {time}
-            </span>
+            <span className="text-sm text-green-600 transition-opacity duration-200">{time}</span>
           )}
-          {hasAlarm && (
-            <span className="text-gray-400 transition-opacity duration-200">
-              ⏰
-            </span>
-          )}
+          {hasAlarm && <span className="text-gray-400 transition-opacity duration-200">⏰</span>}
         </div>
 
         {tag && (
@@ -51,4 +45,4 @@ export const TodoItem = ({
       </div>
     </div>
   );
-}; 
+};
