@@ -80,11 +80,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Type Check
-        run: pnpm turbo typecheck
-
-      - name: Lint
-        run: pnpm biome:check
+      - name: Type Check and Lint
+        run: pnpm check:ci
 
       - name: Unit Tests
         run: pnpm test
