@@ -1,6 +1,7 @@
-import { InMemoryTodoRepository } from '@cursor-rules-todoapp/domain';
-import { createNextApiHandler } from '@trpc/server/adapters/next';
-import type { NextApiHandler } from 'next';
+import { InMemoryTodoRepository } from '@cursor-rules-todoapp/domain/src/repositories/in-memory-todo-repository';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import cors from 'cors';
+import express from 'express';
 import { createContext } from './context';
 import { appRouter } from './router';
 import { TodoUseCaseImpl } from './usecases/todo-impl';
@@ -11,10 +12,23 @@ const todoRepository = new InMemoryTodoRepository();
 // ユースケースの初期化
 const todoUseCase = new TodoUseCaseImpl(todoRepository);
 
-// tRPCハンドラーの作成
-const handler: NextApiHandler = createNextApiHandler({
-  router: appRouter({ todoUseCase }),
-  createContext: (opts) => createContext(opts, { todoUseCase }),
-});
+// Expressアプリケーションの作成
+const app = express();
 
-export default handler;
+// CORSの設定
+app.use(cors());
+
+// tRPCミドルウェアの設定
+app.use(
+  '/trpc',
+  createExpressMiddleware({
+    router: appRouter({ todoUseCase }),
+    createContext: (opts) => createContext(opts, { todoUseCase }),
+  }),
+);
+
+// サーバーの起動
+const port = process.env.PORT || 3001;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
