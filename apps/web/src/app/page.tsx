@@ -128,7 +128,7 @@ export default function TodoPage() {
         <h1 className="text-2xl font-bold dark:text-gray-100">Todo List</h1>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <AddTodoButton onClick={handleCreateTodo} />
+          <AddTodoButton onClick={handleCreateTodo} data-testid="create-todo-button" />
         </div>
       </div>
 
