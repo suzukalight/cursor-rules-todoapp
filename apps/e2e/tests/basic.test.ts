@@ -1,12 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('基本的なページ表示', () => {
-  test.beforeEach(async ({ page }) => {
-    // データベースのリセット
-    await page.goto('/api/test/reset-db');
-    await page.waitForResponse('/api/test/reset-db');
-  });
-
   test('ページタイトルが正しく表示される', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
