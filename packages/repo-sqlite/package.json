@@ -15,7 +15,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push --force-reset --skip-generate",
     "db:migrate": "prisma migrate deploy",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cursor-rules-todoapp/common": "workspace:*",
