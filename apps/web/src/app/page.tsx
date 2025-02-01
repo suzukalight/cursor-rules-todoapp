@@ -106,6 +106,7 @@ export default function TodoPage() {
       await createTodoMutation.mutateAsync({
         title: '新しいタスク',
         description: '',
+        priority: 'medium',
       });
     } catch (error) {
       console.error('Failed to create todo:', error);
