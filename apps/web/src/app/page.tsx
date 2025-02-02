@@ -134,6 +134,21 @@ export default function TodoPage() {
     }
   };
 
+  const handleUpdateDueDate = async (id: string, dueDate: Date | null) => {
+    // Optimistic UI update: update the local state immediately
+    setTodos((prev) => prev.map((todo) =>
+      todo.id === id ? { ...todo, dueDate: dueDate || undefined } : todo
+    ));
+    try {
+      await updateTodoMutation.mutateAsync({
+        id,
+        dueDate: dueDate || undefined,
+      });
+    } catch (error) {
+      console.error('Error updating due date:', error);
+    }
+  };
+
   const filteredTodos = todos
     .filter((todo) => {
       if (status === 'all') return true;
@@ -175,6 +190,7 @@ export default function TodoPage() {
         todos={filteredTodos}
         onUpdateStatus={handleUpdateStatus}
         onUpdatePriority={handleUpdatePriority}
+        onUpdateDueDate={handleUpdateDueDate}
       />
     </main>
   );

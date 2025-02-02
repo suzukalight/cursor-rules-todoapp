@@ -18,9 +18,15 @@ interface TodoListProps {
   todos: Todo[];
   onUpdateStatus: (id: string, status: TodoStatus) => void;
   onUpdatePriority: (id: string, priority: TodoPriority) => void;
+  onUpdateDueDate: (id: string, dueDate: Date | null) => void;
 }
 
-export function TodoList({ todos, onUpdateStatus, onUpdatePriority }: TodoListProps) {
+export function TodoList({
+  todos,
+  onUpdateStatus,
+  onUpdatePriority,
+  onUpdateDueDate,
+}: TodoListProps) {
   return (
     <UITodoList>
       <div className="mt-4 w-full" data-testid="todo-list">
@@ -63,6 +69,7 @@ export function TodoList({ todos, onUpdateStatus, onUpdatePriority }: TodoListPr
                       onPriorityChange={(priority: TodoPriority) =>
                         onUpdatePriority(data.id, priority)
                       }
+                      onDueDateChange={(date: Date | null) => onUpdateDueDate(data.id, date)}
                     />
                   </motion.div>
                 </AnimatePresence>
