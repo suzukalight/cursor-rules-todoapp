@@ -1,7 +1,8 @@
 import type { TodoPriority } from '@cursor-rules-todoapp/common';
-import type { ReactNode } from 'react';
 import { format, isPast } from 'date-fns';
-import { Repeat, Bell } from 'lucide-react';
+import { Bell, Repeat } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Checkbox } from '../ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select';
 
@@ -30,6 +31,7 @@ export interface TodoItemProps {
   priority: TodoPriority;
   onToggle?: () => void;
   onPriorityChange?: (priority: TodoPriority) => void;
+  onDueDateChange?: (date: Date | null) => void;
 }
 
 export const TodoItem = ({
@@ -42,9 +44,18 @@ export const TodoItem = ({
   priority,
   onToggle,
   onPriorityChange,
+  onDueDateChange,
 }: TodoItemProps) => {
-  const formattedDate = date ? format(date, 'M/d') : null;
-  const formattedTime = date ? format(date, 'HH:mm') : null;
+  const [editingDueDate, setEditingDueDate] = useState(false);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingDueDate && dateInputRef.current) {
+      dateInputRef.current.focus();
+    }
+  }, [editingDueDate]);
+
+  const formattedDate = date ? format(date, 'yyyy/MM/dd') : null;
   const isOverdue = date ? isPast(date) && !completed : false;
 
   return (
@@ -53,9 +64,7 @@ export const TodoItem = ({
       <div className="flex items-center gap-2">
         <Checkbox checked={completed} onCheckedChange={onToggle} />
         <span
-          className={`transition-all duration-200 ${
-            completed ? 'text-gray-400 line-through' : ''
-          }`}
+          className={`transition-all duration-200 ${completed ? 'text-gray-400 line-through' : ''}`}
         >
           {title}
         </span>
@@ -65,42 +74,43 @@ export const TodoItem = ({
       <div className="flex items-center justify-between pl-8">
         <div className="flex items-center gap-4">
           {/* スケジュール情報 */}
-          {(isRecurring || date) && (
-            <div className="flex items-center gap-1 text-sm">
-              {isRecurring && (
-                <Repeat className="h-4 w-4 text-gray-400" data-testid="repeat-icon" />
-              )}
-              {date && (
-                <span
-                  className={`${
-                    isOverdue ? 'text-red-500' : 'text-gray-500'
-                  }`}
-                >
-                  {formattedDate} {formattedTime}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-1 text-sm">
+            {isRecurring && <Repeat className="h-4 w-4 text-gray-400" data-testid="repeat-icon" />}
+            <button
+              type="button"
+              onClick={() => setEditingDueDate(true)}
+              className={`${date && isOverdue ? 'text-red-500' : 'text-gray-500'}`}
+            >
+              {date ? formattedDate : <span className="opacity-50">期限なし</span>}
+            </button>
+            {editingDueDate && (
+              <input
+                type="date"
+                value={date ? format(date, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  const newDate = newValue ? new Date(newValue) : null;
+                  onDueDateChange?.(newDate);
+                }}
+                onBlur={() => setEditingDueDate(false)}
+                ref={dateInputRef}
+                className="border border-gray-300 rounded text-sm ml-2"
+              />
+            )}
+          </div>
 
           {/* アラーム */}
-          {hasAlarm && (
-            <Bell className="h-4 w-4 text-gray-400" data-testid="bell-icon" />
-          )}
+          {hasAlarm && <Bell className="h-4 w-4 text-gray-400" data-testid="bell-icon" />}
         </div>
 
         <div className="flex items-center gap-4">
           {/* タグ */}
           {tag && (
             <div className="flex items-center text-xs whitespace-nowrap">
-              <span
-                className="px-1 py-0.5"
-                style={{ color: tag.color }}
-              >
+              <span className="px-1 py-0.5" style={{ color: tag.color }}>
                 #
               </span>
-              <span className="text-gray-600 truncate max-w-[8em]">
-                {tag.name}
-              </span>
+              <span className="text-gray-600 truncate max-w-[8em]">{tag.name}</span>
             </div>
           )}
 

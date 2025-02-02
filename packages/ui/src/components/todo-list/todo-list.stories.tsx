@@ -18,8 +18,19 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <TodoItem title="ミーティング" time="13:00" hasAlarm tag="仕事" priority="high" />
-        <TodoItem title="ジムに行く" time="18:00" tag="フィットネス" priority="medium" />
+        <TodoItem
+          title="ミーティング"
+          date={new Date('2023-10-25')}
+          hasAlarm
+          tag={{ name: '仕事', color: '#ff0000' }}
+          priority="high"
+        />
+        <TodoItem
+          title="ジムに行く"
+          date={new Date('2023-10-25')}
+          tag={{ name: 'フィットネス', color: '#00ff00' }}
+          priority="medium"
+        />
       </>
     ),
   },
@@ -29,10 +40,31 @@ export const WithManyItems: Story = {
   args: {
     children: (
       <>
-        <TodoItem title="ミーティング" time="13:00" hasAlarm tag="仕事" priority="high" />
-        <TodoItem title="ジムに行く" time="18:00" tag="フィットネス" priority="medium" />
-        <TodoItem title="買い物" time="10:00" tag="生活" priority="low" />
-        <TodoItem title="読書" time="20:00" tag="趣味" priority="low" />
+        <TodoItem
+          title="ミーティング"
+          date={new Date('2023-10-25')}
+          hasAlarm
+          tag={{ name: '仕事', color: '#ff0000' }}
+          priority="high"
+        />
+        <TodoItem
+          title="ジムに行く"
+          date={new Date('2023-10-25')}
+          tag={{ name: 'フィットネス', color: '#00ff00' }}
+          priority="medium"
+        />
+        <TodoItem
+          title="買い物"
+          date={new Date('2023-10-25')}
+          tag={{ name: '生活', color: '#0000ff' }}
+          priority="low"
+        />
+        <TodoItem
+          title="読書"
+          date={new Date('2023-10-25')}
+          tag={{ name: '趣味', color: '#ff00ff' }}
+          priority="low"
+        />
       </>
     ),
   },
@@ -43,8 +75,19 @@ export const WithCustomTitle: Story = {
     title: '明日',
     children: (
       <>
-        <TodoItem title="ミーティング" time="13:00" hasAlarm tag="仕事" priority="high" />
-        <TodoItem title="ジムに行く" time="18:00" tag="フィットネス" priority="medium" />
+        <TodoItem
+          title="ミーティング"
+          date={new Date('2023-10-25')}
+          hasAlarm
+          tag={{ name: '仕事', color: '#ff0000' }}
+          priority="high"
+        />
+        <TodoItem
+          title="ジムに行く"
+          date={new Date('2023-10-25')}
+          tag={{ name: 'フィットネス', color: '#00ff00' }}
+          priority="medium"
+        />
       </>
     ),
   },

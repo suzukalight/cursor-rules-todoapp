@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, test, vi } from 'vitest';
 import { addHours, subHours } from 'date-fns';
 import { format } from 'date-fns';
+import { describe, expect, test, vi } from 'vitest';
 import { TodoItem } from './todo-item';
 
 describe('TodoItem', () => {
@@ -15,27 +15,23 @@ describe('TodoItem', () => {
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  test('日付と時刻が表示される', () => {
+  test('日付が表示される', () => {
     const date = new Date('2024-03-01T12:00:00');
     render(<TodoItem title="Test Todo" date={date} priority="medium" />);
-    expect(screen.getByText('3/1 12:00')).toBeInTheDocument();
+    expect(screen.getByText('2024/03/01')).toBeInTheDocument();
   });
 
   test('期限切れの日付は赤字で表示される', () => {
     const pastDate = subHours(new Date(), 1);
     render(<TodoItem title="Test Todo" date={pastDate} priority="medium" />);
-    const dateElement = screen.getByText(
-      `${format(pastDate, 'M/d')} ${format(pastDate, 'HH:mm')}`
-    );
+    const dateElement = screen.getByText(format(pastDate, 'yyyy/MM/dd'));
     expect(dateElement).toHaveClass('text-red-500');
   });
 
   test('完了済みのタスクは期限切れでも赤字にならない', () => {
     const pastDate = subHours(new Date(), 1);
     render(<TodoItem title="Test Todo" date={pastDate} completed priority="medium" />);
-    const dateElement = screen.getByText(
-      `${format(pastDate, 'M/d')} ${format(pastDate, 'HH:mm')}`
-    );
+    const dateElement = screen.getByText(format(pastDate, 'yyyy/MM/dd'));
     expect(dateElement).toHaveClass('text-gray-500');
   });
 
@@ -51,11 +47,7 @@ describe('TodoItem', () => {
 
   test('タグが表示される', () => {
     render(
-      <TodoItem
-        title="Test Todo"
-        tag={{ name: 'important', color: '#ff0000' }}
-        priority="medium"
-      />
+      <TodoItem title="Test Todo" tag={{ name: 'important', color: '#ff0000' }} priority="medium" />
     );
     const hashTag = screen.getByText('#');
     expect(hashTag).toHaveStyle({ color: '#ff0000' });
@@ -85,5 +77,10 @@ describe('TodoItem', () => {
     fireEvent.click(screen.getByText('高'));
 
     expect(onPriorityChange).toHaveBeenCalledWith('high');
+  });
+
+  test('期限がない場合、「期限なし」が表示される', () => {
+    render(<TodoItem title="Test Todo" priority="medium" />);
+    expect(screen.getByText('期限なし')).toBeInTheDocument();
   });
 });

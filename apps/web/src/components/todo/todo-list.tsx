@@ -51,10 +51,7 @@ export function TodoList({ todos, onUpdateStatus, onUpdatePriority }: TodoListPr
                     <TodoItem
                       title={data.title}
                       completed={data.status === 'completed'}
-                      time={data.dueDate?.toLocaleTimeString('ja-JP', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      date={data.dueDate}
                       hasAlarm={!!data.dueDate}
                       priority={data.priority}
                       onToggle={() =>
