@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
+import { addHours, subHours } from 'date-fns';
+import { format } from 'date-fns';
 import { TodoItem } from './todo-item';
 
 describe('TodoItem', () => {
@@ -13,18 +15,50 @@ describe('TodoItem', () => {
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  test('時間が表示される', () => {
-    render(<TodoItem title="Test Todo" time="12:00" priority="medium" />);
-    expect(screen.getByText('12:00')).toBeInTheDocument();
+  test('日付と時刻が表示される', () => {
+    const date = new Date('2024-03-01T12:00:00');
+    render(<TodoItem title="Test Todo" date={date} priority="medium" />);
+    expect(screen.getByText('3/1 12:00')).toBeInTheDocument();
+  });
+
+  test('期限切れの日付は赤字で表示される', () => {
+    const pastDate = subHours(new Date(), 1);
+    render(<TodoItem title="Test Todo" date={pastDate} priority="medium" />);
+    const dateElement = screen.getByText(
+      `${format(pastDate, 'M/d')} ${format(pastDate, 'HH:mm')}`
+    );
+    expect(dateElement).toHaveClass('text-red-500');
+  });
+
+  test('完了済みのタスクは期限切れでも赤字にならない', () => {
+    const pastDate = subHours(new Date(), 1);
+    render(<TodoItem title="Test Todo" date={pastDate} completed priority="medium" />);
+    const dateElement = screen.getByText(
+      `${format(pastDate, 'M/d')} ${format(pastDate, 'HH:mm')}`
+    );
+    expect(dateElement).toHaveClass('text-gray-500');
+  });
+
+  test('繰り返しアイコンが表示される', () => {
+    render(<TodoItem title="Test Todo" isRecurring priority="medium" />);
+    expect(screen.getByTestId('repeat-icon')).toBeInTheDocument();
   });
 
   test('アラームアイコンが表示される', () => {
     render(<TodoItem title="Test Todo" hasAlarm priority="medium" />);
-    expect(screen.getByText('⏰')).toBeInTheDocument();
+    expect(screen.getByTestId('bell-icon')).toBeInTheDocument();
   });
 
   test('タグが表示される', () => {
-    render(<TodoItem title="Test Todo" tag="important" priority="medium" />);
+    render(
+      <TodoItem
+        title="Test Todo"
+        tag={{ name: 'important', color: '#ff0000' }}
+        priority="medium"
+      />
+    );
+    const hashTag = screen.getByText('#');
+    expect(hashTag).toHaveStyle({ color: '#ff0000' });
     expect(screen.getByText('important')).toBeInTheDocument();
   });
 
@@ -35,16 +69,16 @@ describe('TodoItem', () => {
     expect(onToggle).toHaveBeenCalled();
   });
 
-  test('優先度が表示される', () => {
+  test('優先度ラベルが表示される', () => {
     render(<TodoItem title="Test Todo" priority="high" />);
-    expect(screen.getByText('高')).toBeInTheDocument();
+    expect(screen.getByText('高')).toHaveClass('text-red-600');
   });
 
   test('優先度を変更するとonPriorityChangeが呼ばれる', () => {
     const onPriorityChange = vi.fn();
     render(<TodoItem title="Test Todo" priority="medium" onPriorityChange={onPriorityChange} />);
 
-    // 優先度選択のトリガーをクリック
+    // 優先度ラベルをクリック
     fireEvent.click(screen.getByText('中'));
 
     // 優先度「高」を選択
