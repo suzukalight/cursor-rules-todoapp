@@ -18,6 +18,7 @@ interface CreateTodoInput {
   title: string;
   description?: string;
   priority: 'high' | 'medium' | 'low';
+  dueDate?: Date;
 }
 
 interface ChangeStatusInput {
@@ -85,11 +86,12 @@ describe('API統合テスト', () => {
 
   describe('Todo API', () => {
     it('Todoを作成できる', async () => {
-      const response = await helper.post<CreateTodoInput, Todo>('todo.create', {
+      const input: CreateTodoInput = {
         title: 'テストTodo',
         description: 'テストの説明',
-        priority: 'medium',
-      });
+        priority: 'medium' as const,
+      };
+      const response = await helper.post<CreateTodoInput, Todo>('todo.create', input);
 
       helper.expectSuccess(response);
       expect(response.data).toBeDefined();
@@ -100,34 +102,34 @@ describe('API統合テスト', () => {
     });
 
     it('存在しないTodoの取得でエラーになる', async () => {
-      const response = await helper.get<{ id: string }, Todo>('todo.findById', {
-        id: 'non-existent-id',
-      });
+      const input = { id: 'non-existent-id' };
+      const response = await helper.get<{ id: string }, Todo>('todo.findById', input);
       helper.expectError(response, 404, 'Todo not found');
     });
 
     it('不正なデータでTodoを作成するとバリデーションエラーになる', async () => {
-      const response = await helper.post<Partial<CreateTodoInput>, Todo>('todo.create', {
-        description: 'テストの説明',
-      });
+      const input = { description: 'テストの説明' };
+      const response = await helper.post<Partial<CreateTodoInput>, Todo>('todo.create', input);
       helper.expectError(response, 400, 'Required');
     });
 
     it('Todoのステータスを変更できる', async () => {
       // 1. まずTodoを作成
-      const createResponse = await helper.post<CreateTodoInput, Todo>('todo.create', {
+      const createInput: CreateTodoInput = {
         title: 'テストTodo',
         description: 'テストの説明',
-        priority: 'medium',
-      });
+        priority: 'medium' as const,
+      };
+      const createResponse = await helper.post<CreateTodoInput, Todo>('todo.create', createInput);
       helper.expectSuccess(createResponse);
       expect(createResponse.data).toBeDefined();
 
       // 2. ステータスを完了に変更
-      const completeResponse = await helper.post<ChangeStatusInput, Todo>('todo.changeStatus', {
+      const changeInput: ChangeStatusInput = {
         id: createResponse.data!.id,
-        status: 'completed',
-      });
+        status: 'completed' as const,
+      };
+      const completeResponse = await helper.post<ChangeStatusInput, Todo>('todo.changeStatus', changeInput);
       helper.expectSuccess(completeResponse);
       expect(completeResponse.data).toBeDefined();
       expect(completeResponse.data!.status).toBe('completed');
@@ -136,20 +138,22 @@ describe('API統合テスト', () => {
 
     it('Todoの一覧を取得できる', async () => {
       // 1. テストデータを作成
-      await helper.post<CreateTodoInput, Todo>('todo.create', {
+      const input1: CreateTodoInput = {
         title: 'テストTodo1',
         description: 'テストの説明1',
-        priority: 'high',
-      });
+        priority: 'high' as const,
+      };
+      await helper.post<CreateTodoInput, Todo>('todo.create', input1);
 
-      await helper.post<CreateTodoInput, Todo>('todo.create', {
+      const input2: CreateTodoInput = {
         title: 'テストTodo2',
         description: 'テストの説明2',
-        priority: 'low',
-      });
+        priority: 'low' as const,
+      };
+      await helper.post<CreateTodoInput, Todo>('todo.create', input2);
 
       // 2. 一覧を取得
-      const response = await helper.get<undefined, Todo[]>('todo.findAll');
+      const response = await helper.get<undefined, Todo[]>('todo.findAll', undefined);
       helper.expectSuccess(response);
       expect(response.data).toBeDefined();
       expect(Array.isArray(response.data)).toBe(true);

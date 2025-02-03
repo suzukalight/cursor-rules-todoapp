@@ -64,7 +64,7 @@ export class TRPCTestHelper {
       const result = JSON.parse(response.text);
       if (result.error) {
         return {
-          status: result.error.data?.httpStatus ?? 500,
+          status: result.error.data?.httpStatus ?? 400,
           error: {
             message: result.error.message,
             code: result.error.code,
@@ -80,7 +80,7 @@ export class TRPCTestHelper {
     } catch (error) {
       this.log('Parse Error:', error);
       return {
-        status: 500,
+        status: 400,
         error: {
           message: 'Failed to parse response',
           code: 'PARSE_ERROR',
@@ -97,7 +97,7 @@ export class TRPCTestHelper {
     input?: TInput
   ): Promise<APIResponse<TOutput>> {
     const url = input
-      ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify({ input }))}`
+      ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify(input))}`
       : `/trpc/${endpoint}`;
 
     const response = await request(this.app).get(url).send();
@@ -112,7 +112,7 @@ export class TRPCTestHelper {
       const result = JSON.parse(response.text);
       if (result.error) {
         return {
-          status: result.error.data?.httpStatus ?? 500,
+          status: result.error.data?.httpStatus ?? 400,
           error: {
             message: result.error.message,
             code: result.error.code,
@@ -128,7 +128,7 @@ export class TRPCTestHelper {
     } catch (error) {
       this.log('Parse Error:', error);
       return {
-        status: 500,
+        status: 400,
         error: {
           message: 'Failed to parse response',
           code: 'PARSE_ERROR',
