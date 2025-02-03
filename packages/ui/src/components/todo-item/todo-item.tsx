@@ -66,9 +66,24 @@ export const TodoItem = ({
 
   const handleDueDateChange = (newValue: string) => {
     setInputValue(newValue);
-    const parsedDate = parseDateString(newValue);
-    if (onDueDateChange) {
-      onDueDateChange(parsedDate);
+    if (newValue === '') {
+      if (onDueDateChange) {
+        onDueDateChange(null);
+      }
+      return;
+    }
+
+    try {
+      const parsedDate = parseDateString(newValue);
+      if (parsedDate === null) {
+        console.error('Invalid date format:', newValue);
+        return;
+      }
+      if (onDueDateChange) {
+        onDueDateChange(parsedDate);
+      }
+    } catch {
+      console.error('Invalid date format:', newValue);
     }
   };
 
