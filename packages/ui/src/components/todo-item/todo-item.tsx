@@ -1,6 +1,10 @@
 import type { TodoPriority } from '@cursor-rules-todoapp/common';
-import { format, isPast, parseISO, startOfDay, setHours } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import {
+  formatDateForDisplay,
+  formatDateForInput,
+  isDateOverdue,
+  parseDateString,
+} from '@cursor-rules-todoapp/common/src/date/date-utils';
 import { Bell, Repeat } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -17,77 +21,6 @@ const priorityColors: Record<TodoPriority, string> = {
   low: 'text-blue-600',
   medium: 'text-yellow-600',
   high: 'text-red-600',
-};
-
-/**
- * 日付を正規化する（その日の0時0分0秒に設定）
- * @param date 正規化する日付
- * @returns 正規化された日付
- */
-const normalizeDate = (date: Date): Date => {
-  const normalized = new Date(date);
-  normalized.setHours(0, 0, 0, 0);
-  return normalized;
-};
-
-/**
- * 表示用の日付フォーマット（YYYY/MM/DD）
- */
-const formatDateForDisplay = (date: Date | null): string | null => {
-  if (!date) return null;
-  const normalized = normalizeDate(date);
-  return format(normalized, 'yyyy/MM/dd', { locale: ja });
-};
-
-/**
- * 入力用の日付フォーマット（YYYY-MM-DD）
- */
-const formatDateForInput = (date: Date | null): string => {
-  if (!date) return '';
-  const normalized = normalizeDate(date);
-  return format(normalized, 'yyyy-MM-dd', { locale: ja });
-};
-
-/**
- * 入力された日付文字列をパースする
- */
-const parseDateFromInput = (value: string): Date | null => {
-  if (!value) return null;
-
-  try {
-    // YYYY-MM-DD形式の文字列をパース
-    const [year, month, day] = value.split('-').map(Number);
-    if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
-      console.error('Invalid date format:', value);
-      return null;
-    }
-
-    // 日付の妥当性チェック
-    const date = new Date(year, month - 1, day);
-    if (
-      date.getFullYear() !== year ||
-      date.getMonth() !== month - 1 ||
-      date.getDate() !== day
-    ) {
-      console.error('Invalid date:', value);
-      return null;
-    }
-
-    return normalizeDate(date);
-  } catch (error) {
-    console.error('Failed to parse date:', value, error);
-    return null;
-  }
-};
-
-/**
- * 期限切れかどうかを判定する
- */
-const isDateOverdue = (date: Date | null, completed: boolean): boolean => {
-  if (!date || completed) return false;
-  const today = normalizeDate(new Date());
-  const normalized = normalizeDate(date);
-  return normalized < today;
 };
 
 export interface TodoItemProps {
@@ -134,7 +67,7 @@ export const TodoItem = ({
 
   const handleDueDateChange = (newValue: string) => {
     setInputValue(newValue);
-    const parsedDate = parseDateFromInput(newValue);
+    const parsedDate = parseDateString(newValue);
     if (onDueDateChange) {
       onDueDateChange(parsedDate);
     }
@@ -168,7 +101,7 @@ export const TodoItem = ({
               onClick={() => setEditingDueDate(true)}
               className={`${isOverdue ? 'text-red-500' : 'text-gray-500'}`}
             >
-              {formattedDate ? formattedDate : <span className="opacity-50">期限なし</span>}
+              {formattedDate}
             </button>
             {editingDueDate && (
               <input
