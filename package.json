@@ -28,6 +28,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.64.2",
     "@trpc/react-query": "^10.45.2",
+    "date-fns": "^4.1.0",
     "superjson": "^2.2.2",
     "web": "workspace:^"
   }
