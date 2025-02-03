@@ -75,7 +75,7 @@ describe('API統合テスト', () => {
     server = app.listen(0);
     helper = new TRPCTestHelper(app, {
       // 必要なときだけ true にする
-      debug: false,
+      debug: true,
     });
   });
 
@@ -129,7 +129,10 @@ describe('API統合テスト', () => {
         id: createResponse.data!.id,
         status: 'completed' as const,
       };
-      const completeResponse = await helper.post<ChangeStatusInput, Todo>('todo.changeStatus', changeInput);
+      const completeResponse = await helper.post<ChangeStatusInput, Todo>(
+        'todo.changeStatus',
+        changeInput
+      );
       helper.expectSuccess(completeResponse);
       expect(completeResponse.data).toBeDefined();
       expect(completeResponse.data!.status).toBe('completed');
