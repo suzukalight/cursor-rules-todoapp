@@ -2,6 +2,7 @@ import type { AppRouter } from '@cursor-rules-todoapp/api/src/router';
 import { QueryClient } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { createTRPCReact } from '@trpc/react-query';
+import superjson from 'superjson';
 
 export const trpc = createTRPCReact<AppRouter>();
 
@@ -15,6 +16,7 @@ export const queryClient = new QueryClient({
 });
 
 export const trpcClient = trpc.createClient({
+  transformer: superjson,
   links: [
     httpBatchLink({
       url: 'http://localhost:3001/trpc',
