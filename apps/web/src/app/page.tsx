@@ -1,13 +1,26 @@
 'use client';
 
 import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/common';
-import type { TodoDto } from '@cursor-rules-todoapp/domain';
+import type { Result } from '@cursor-rules-todoapp/common';
+import type { TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
 import { useEffect, useState } from 'react';
 import { ThemeToggle } from '../components/theme/theme-toggle';
 import { TodoFilter } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
 import { trpc } from '../utils/api';
+
+const convertTodoDto = (todoDto: TodoDto): Todo => ({
+  id: todoDto.id,
+  title: todoDto.title,
+  description: todoDto.description,
+  status: todoDto.status,
+  priority: todoDto.priority,
+  dueDate: todoDto.dueDate ? new Date(todoDto.dueDate) : undefined,
+  completedAt: todoDto.completedAt ? new Date(todoDto.completedAt) : undefined,
+  createdAt: new Date(todoDto.createdAt),
+  updatedAt: new Date(todoDto.updatedAt),
+});
 
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -16,85 +29,34 @@ export default function TodoPage() {
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt'>('createdAt');
 
   const utils = trpc.useContext();
-  const { data: todoData } = trpc.todo.findAll.useQuery();
+  const { data: todoResult } = trpc.todo.findAll.useQuery();
 
   useEffect(() => {
-    if (todoData) {
-      const convertedTodos = todoData.map((todo) => {
-        const data = ('props' in todo ? todo.props : todo) as TodoDto;
-        return {
-          id: data.id,
-          title: data.title,
-          description: data.description,
-          status: data.status,
-          priority: data.priority,
-          dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-          completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
-          createdAt: new Date(data.createdAt),
-          updatedAt: new Date(data.updatedAt),
-        };
-      });
+    if (todoResult) {
+      const convertedTodos = todoResult.map(convertTodoDto);
       setTodos(convertedTodos);
     }
-  }, [todoData]);
+  }, [todoResult]);
 
   const createTodoMutation = trpc.todo.create.useMutation({
-    onSuccess: async (data) => {
-      if (!data) {
-        console.warn('No data returned from mutation');
-        return;
-      }
-
-      const newTodo = {
-        id: data.id,
-        title: data.title,
-        description: data.description,
-        status: data.status,
-        priority: data.priority,
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-        createdAt: new Date(data.createdAt),
-        updatedAt: new Date(data.updatedAt),
-        completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
-      };
-
+    onSuccess: async (result) => {
+      const newTodo = convertTodoDto(result);
       setTodos((prev) => [...prev, newTodo]);
       await utils.todo.findAll.invalidate();
     },
   });
 
-  const changeTodoStatusMutation = trpc.todo.changeStatus.useMutation({
-    onSuccess: async (data) => {
-      const todoData = ('props' in data ? data.props : data) as TodoDto;
-      const updatedTodo: Todo = {
-        id: todoData.id,
-        title: todoData.title,
-        description: todoData.description,
-        status: todoData.status,
-        priority: todoData.priority,
-        dueDate: todoData.dueDate ? new Date(todoData.dueDate) : undefined,
-        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
-        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
-        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
-      };
+  const updateTodoMutation = trpc.todo.update.useMutation({
+    onSuccess: async (result) => {
+      const updatedTodo = convertTodoDto(result);
       setTodos((prev) => prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo)));
       await utils.todo.findAll.invalidate();
     },
   });
 
-  const updateTodoMutation = trpc.todo.update.useMutation({
-    onSuccess: async (data) => {
-      const todoData = ('props' in data ? data.props : data) as TodoDto;
-      const updatedTodo: Todo = {
-        id: todoData.id,
-        title: todoData.title,
-        description: todoData.description,
-        status: todoData.status,
-        priority: todoData.priority,
-        dueDate: todoData.dueDate ? new Date(todoData.dueDate) : undefined,
-        createdAt: todoData.createdAt ? new Date(todoData.createdAt) : new Date(),
-        updatedAt: todoData.updatedAt ? new Date(todoData.updatedAt) : new Date(),
-        completedAt: todoData.completedAt ? new Date(todoData.completedAt) : undefined,
-      };
+  const changeTodoStatusMutation = trpc.todo.changeStatus.useMutation({
+    onSuccess: async (result) => {
+      const updatedTodo = convertTodoDto(result);
       setTodos((prev) => prev.map((todo) => (todo.id === updatedTodo.id ? updatedTodo : todo)));
       await utils.todo.findAll.invalidate();
     },
@@ -116,7 +78,7 @@ export default function TodoPage() {
     try {
       await changeTodoStatusMutation.mutateAsync({
         id,
-        status: status === 'completed' ? 'completed' : 'pending',
+        status,
       });
     } catch (error) {
       console.error('Error updating todo status:', error);
@@ -136,9 +98,9 @@ export default function TodoPage() {
 
   const handleUpdateDueDate = async (id: string, dueDate: Date | null) => {
     // Optimistic UI update: update the local state immediately
-    setTodos((prev) => prev.map((todo) =>
-      todo.id === id ? { ...todo, dueDate: dueDate || undefined } : todo
-    ));
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === id ? { ...todo, dueDate: dueDate || undefined } : todo))
+    );
     try {
       // APIに送信する前に日付を正しい形式に変換
       let dueDateForApi: Date | undefined = undefined;
@@ -148,11 +110,7 @@ export default function TodoPage() {
           throw new Error('Invalid date');
         }
         // 日付のみを抽出して新しいDateオブジェクトを作成
-        const [year, month, day] = dueDate
-          .toISOString()
-          .split('T')[0]
-          .split('-')
-          .map(Number);
+        const [year, month, day] = dueDate.toISOString().split('T')[0].split('-').map(Number);
         dueDateForApi = new Date(year, month - 1, day, 0, 0, 0, 0);
       }
 
@@ -164,9 +122,9 @@ export default function TodoPage() {
       console.error('Error updating due date:', error);
       // エラー時は元の状態に戻す
       const originalTodo = todos.find((todo) => todo.id === id);
-      setTodos((prev) => prev.map((todo) =>
-        todo.id === id ? { ...todo, dueDate: originalTodo?.dueDate } : todo
-      ));
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === id ? { ...todo, dueDate: originalTodo?.dueDate } : todo))
+      );
     }
   };
 

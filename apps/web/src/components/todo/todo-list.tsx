@@ -21,7 +21,12 @@ interface TodoListProps {
   onUpdateDueDate: (id: string, dueDate: Date | null) => void;
 }
 
-export function TodoList({ todos, onUpdateStatus, onUpdatePriority, onUpdateDueDate }: TodoListProps) {
+export function TodoList({
+  todos,
+  onUpdateStatus,
+  onUpdatePriority,
+  onUpdateDueDate,
+}: TodoListProps) {
   return (
     <UITodoList>
       <div className="mt-4 w-full" data-testid="todo-list">

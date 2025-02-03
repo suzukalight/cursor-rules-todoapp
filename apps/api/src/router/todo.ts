@@ -1,162 +1,134 @@
-import {
-  ChangeTodoStatusUseCase,
-  CreateTodoUseCase,
-  DeleteTodoUseCase,
-  FindTodoUseCase,
-  type Todo,
-  TodoNotFoundError,
-  type TodoRepository,
-  UpdateTodoUseCase,
-} from '@cursor-rules-todoapp/domain';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 import type { TodoUseCase } from '../usecases/todo';
-import { trpc } from './trpc';
 
-const todoInputSchema = z.object({
+const createTodoSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
   dueDate: z.date().optional(),
 });
 
-const todoIdSchema = z.object({
+const updateTodoSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1).optional(),
+  description: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  dueDate: z.date().optional(),
+});
+
+const findByIdSchema = z.object({
   id: z.string(),
 });
 
-const filterInputSchema = z.object({
-  status: z.enum(['pending', 'completed']).optional(),
-  priority: z.enum(['low', 'medium', 'high']).optional(),
-  dueDateBefore: z.date().optional(),
-  dueDateAfter: z.date().optional(),
+const changeStatusSchema = z.object({
+  id: z.string(),
+  status: z.enum(['pending', 'completed']),
 });
 
-const sortInputSchema = z.object({
+const filterSchema = z.object({
+  status: z.enum(['pending', 'completed']).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  dueDateAfter: z.date().optional(),
+  dueDateBefore: z.date().optional(),
+});
+
+const sortSchema = z.object({
   sortBy: z.enum(['createdAt', 'priority', 'dueDate']),
   order: z.enum(['asc', 'desc']),
 });
 
-export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) => {
-  return router({
+export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
+  router({
+    create: publicProcedure.input(createTodoSchema).mutation(async ({ input }) => {
+      const todo = await todoUseCase.create(input);
+      if (!todo.isOk()) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: todo.error.message,
+        });
+      }
+      return todo.value;
+    }),
+
     findAll: publicProcedure.query(async () => {
-      const result = await todoUseCase.findAll();
-      if (result.isErr()) {
+      const todos = await todoUseCase.findAll();
+      if (!todos.isOk()) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: result.error.message,
+          message: todos.error.message,
         });
       }
-      return result.value;
+      return todos.value;
     }),
 
-    findById: publicProcedure.input(todoIdSchema).query(async ({ input }) => {
-      const result = await todoUseCase.findById(input.id);
-      if (result.isErr()) {
-        if (result.error.message === 'Todo not found') {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: result.error.message,
-          });
-        }
+    findById: publicProcedure.input(findByIdSchema).query(async ({ input }) => {
+      const todo = await todoUseCase.findById(input.id);
+      if (!todo.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: result.error.message,
+          code: 'NOT_FOUND',
+          message: todo.error.message,
         });
       }
-      return result.value;
+      return todo.value;
     }),
 
-    create: publicProcedure.input(todoInputSchema).mutation(async ({ input }) => {
-      const result = await todoUseCase.create(input);
-      if (result.isErr()) {
+    update: publicProcedure.input(updateTodoSchema).mutation(async ({ input }) => {
+      const todo = await todoUseCase.update(input);
+      if (!todo.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: result.error.message,
+          code: 'NOT_FOUND',
+          message: todo.error.message,
         });
       }
-      return result.value;
+      return todo.value;
     }),
 
-    update: publicProcedure
-      .input(todoIdSchema.merge(todoInputSchema.partial()))
-      .mutation(async ({ input }) => {
-        const { id, ...data } = input;
-        const result = await todoUseCase.update({ id, ...data });
-        if (result.isErr()) {
-          if (result.error.message === 'Todo not found') {
-            throw new TRPCError({
-              code: 'NOT_FOUND',
-              message: result.error.message,
-            });
-          }
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: result.error.message,
-          });
-        }
-        return result.value;
-      }),
-
-    delete: publicProcedure.input(todoIdSchema).mutation(async ({ input }) => {
+    delete: publicProcedure.input(findByIdSchema).mutation(async ({ input }) => {
       const result = await todoUseCase.delete(input);
-      if (result.isErr()) {
-        if (result.error.message === 'Todo not found') {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: result.error.message,
-          });
-        }
+      if (!result.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'NOT_FOUND',
           message: result.error.message,
         });
       }
       return result.value;
     }),
 
-    changeStatus: publicProcedure
-      .input(todoIdSchema.merge(z.object({ status: z.enum(['pending', 'completed']) })))
-      .mutation(async ({ input }) => {
-        const result =
-          input.status === 'completed'
-            ? await todoUseCase.complete(input)
-            : await todoUseCase.cancel(input);
-        if (result.isErr()) {
-          if (result.error.message === 'Todo not found') {
-            throw new TRPCError({
-              code: 'NOT_FOUND',
-              message: result.error.message,
-            });
-          }
-          throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: result.error.message,
-          });
-        }
-        return result.value;
-      }),
-
-    filter: publicProcedure.input(filterInputSchema).query(async ({ input }) => {
-      const result = await todoUseCase.filter(input);
-      if (result.isErr()) {
+    changeStatus: publicProcedure.input(changeStatusSchema).mutation(async ({ input }) => {
+      const todo =
+        input.status === 'completed'
+          ? await todoUseCase.complete(input)
+          : await todoUseCase.cancel(input);
+      if (!todo.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: result.error.message,
+          code: 'NOT_FOUND',
+          message: todo.error.message,
         });
       }
-      return result.value;
+      return todo.value;
     }),
 
-    sort: publicProcedure.input(sortInputSchema).query(async ({ input }) => {
-      const result = await todoUseCase.sort(input);
-      if (result.isErr()) {
+    filter: publicProcedure.input(filterSchema).query(async ({ input }) => {
+      const todos = await todoUseCase.filter(input);
+      if (!todos.isOk()) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: result.error.message,
+          message: todos.error.message,
         });
       }
-      return result.value;
+      return todos.value;
+    }),
+
+    sort: publicProcedure.input(sortSchema).query(async ({ input }) => {
+      const todos = await todoUseCase.sort(input);
+      if (!todos.isOk()) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: todos.error.message,
+        });
+      }
+      return todos.value;
     }),
   });
-};
