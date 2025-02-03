@@ -283,9 +283,7 @@ describe('todoRouter', () => {
 
         const currentPriority = current.priority as keyof typeof priorityOrder;
         const previousPriority = previous.priority as keyof typeof priorityOrder;
-        expect(priorityOrder[currentPriority]).toBeLessThanOrEqual(
-          priorityOrder[previousPriority]
-        );
+        expect(priorityOrder[currentPriority]).toBeLessThanOrEqual(priorityOrder[previousPriority]);
       }
     });
 
@@ -299,9 +297,7 @@ describe('todoRouter', () => {
         if (!current || !previous) continue;
         if (!current.dueDate || !previous.dueDate) continue;
 
-        expect(current.dueDate.getTime()).toBeGreaterThanOrEqual(
-          previous.dueDate.getTime()
-        );
+        expect(current.dueDate.getTime()).toBeGreaterThanOrEqual(previous.dueDate.getTime());
       }
     });
   });
