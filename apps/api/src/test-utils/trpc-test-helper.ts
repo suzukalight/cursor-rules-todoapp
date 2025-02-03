@@ -7,6 +7,7 @@ interface APIResponse<T> {
   data?: T;
   error?: {
     message: string;
+    code: string;
     [key: string]: unknown;
   };
 }
@@ -48,29 +49,44 @@ export class TRPCTestHelper {
     const response = await request(this.app)
       .post(`/trpc/${endpoint}`)
       .set('Content-Type', 'application/json')
-      .send(JSON.stringify(input));
+      .send({ input });
 
     this.log('POST Request:', {
       url: `/trpc/${endpoint}`,
-      body: input,
+      body: { input },
     });
     this.log('POST Response:', {
       status: response.status,
       text: response.text,
     });
 
-    if (response.status === 200) {
+    try {
       const result = JSON.parse(response.text);
+      if (result.error) {
+        return {
+          status: result.error.data?.httpStatus ?? 500,
+          error: {
+            message: result.error.message,
+            code: result.error.code,
+            ...result.error,
+          },
+        };
+      }
+
       return {
-        status: response.status,
+        status: 200,
         data: result.result.data as TOutput,
       };
+    } catch (error) {
+      this.log('Parse Error:', error);
+      return {
+        status: 500,
+        error: {
+          message: 'Failed to parse response',
+          code: 'PARSE_ERROR',
+        },
+      };
     }
-
-    return {
-      status: response.status,
-      error: JSON.parse(response.text).error,
-    };
   }
 
   /**
@@ -81,7 +97,7 @@ export class TRPCTestHelper {
     input?: TInput
   ): Promise<APIResponse<TOutput>> {
     const url = input
-      ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify(input))}`
+      ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify({ input }))}`
       : `/trpc/${endpoint}`;
 
     const response = await request(this.app).get(url).send();
@@ -92,18 +108,33 @@ export class TRPCTestHelper {
       text: response.text,
     });
 
-    if (response.status === 200) {
+    try {
       const result = JSON.parse(response.text);
+      if (result.error) {
+        return {
+          status: result.error.data?.httpStatus ?? 500,
+          error: {
+            message: result.error.message,
+            code: result.error.code,
+            ...result.error,
+          },
+        };
+      }
+
       return {
-        status: response.status,
+        status: 200,
         data: result.result.data as TOutput,
       };
+    } catch (error) {
+      this.log('Parse Error:', error);
+      return {
+        status: 500,
+        error: {
+          message: 'Failed to parse response',
+          code: 'PARSE_ERROR',
+        },
+      };
     }
-
-    return {
-      status: response.status,
-      error: JSON.parse(response.text).error,
-    };
   }
 
   /**

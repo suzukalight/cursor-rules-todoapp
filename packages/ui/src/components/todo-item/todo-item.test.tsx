@@ -83,4 +83,81 @@ describe('TodoItem', () => {
     render(<TodoItem title="Test Todo" priority="medium" />);
     expect(screen.getByText('期限なし')).toBeInTheDocument();
   });
+
+  test('期限日を更新できる', () => {
+    const onDueDateChange = vi.fn();
+    const initialDate = new Date('2024-03-01T00:00:00');
+    render(
+      <TodoItem
+        title="Test Todo"
+        priority="medium"
+        date={initialDate}
+        onDueDateChange={onDueDateChange}
+      />
+    );
+
+    // 期限日の表示をクリック
+    fireEvent.click(screen.getByText('2024/03/01'));
+
+    // 日付入力フィールドが表示されることを確認
+    const dateInput = screen.getByDisplayValue('2024-03-01');
+    expect(dateInput).toBeInTheDocument();
+
+    // 新しい日付を入力
+    const newDate = '2024-03-02';
+    fireEvent.change(dateInput, { target: { value: newDate } });
+    fireEvent.blur(dateInput);
+
+    // ハンドラーが正しく呼び出されたことを確認
+    const expectedDate = new Date('2024-03-02T00:00:00');
+    expect(onDueDateChange).toHaveBeenCalledWith(expectedDate);
+  });
+
+  test('期限日を削除できる', () => {
+    const onDueDateChange = vi.fn();
+    const initialDate = new Date('2024-03-01T00:00:00');
+    render(
+      <TodoItem
+        title="Test Todo"
+        priority="medium"
+        date={initialDate}
+        onDueDateChange={onDueDateChange}
+      />
+    );
+
+    // 期限日の表示をクリック
+    fireEvent.click(screen.getByText('2024/03/01'));
+
+    // 日付入力フィールドが表示されることを確認
+    const dateInput = screen.getByDisplayValue('2024-03-01');
+    expect(dateInput).toBeInTheDocument();
+
+    // 日付を空にする
+    fireEvent.change(dateInput, { target: { value: '' } });
+    fireEvent.blur(dateInput);
+
+    // ハンドラーが正しく呼び出されたことを確認
+    expect(onDueDateChange).toHaveBeenCalledWith(null);
+  });
+
+  test('無効な日付の場合はエラーログが出力される', () => {
+    const onDueDateChange = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, 'error');
+
+    render(<TodoItem title="Test Todo" priority="medium" onDueDateChange={onDueDateChange} />);
+
+    // 期限日の表示をクリック
+    fireEvent.click(screen.getByText('期限なし'));
+
+    // 無効な日付を入力
+    const dateInput = screen.getByDisplayValue('');
+    fireEvent.change(dateInput, { target: { value: 'invalid-date' } });
+    fireEvent.blur(dateInput);
+
+    // エラーログが出力されることを確認
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Invalid date:', 'invalid-date');
+    expect(onDueDateChange).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
+  });
 });

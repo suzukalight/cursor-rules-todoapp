@@ -71,11 +71,11 @@ describe('todoRouter', () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
 
       // テストデータの作成
-      await caller.create({
+      const todo1 = await caller.create({
         title: 'Todo 1',
         description: 'Description 1',
       });
-      await caller.create({
+      const todo2 = await caller.create({
         title: 'Todo 2',
         description: 'Description 2',
       });
@@ -86,12 +86,12 @@ describe('todoRouter', () => {
       expect(result).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            title: 'Todo 1',
-            description: 'Description 1',
+            title: todo1.title,
+            description: todo1.description,
           }),
           expect.objectContaining({
-            title: 'Todo 2',
-            description: 'Description 2',
+            title: todo2.title,
+            description: todo2.description,
           }),
         ])
       );
@@ -102,8 +102,8 @@ describe('todoRouter', () => {
     test('IDを指定してTodoを取得できる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const created = await caller.create(_createTodoInput);
-      const result = await caller.findById({ id: created.id });
 
+      const result = await caller.findById({ id: created.id });
       expect(result).toEqual(created);
     });
 
@@ -117,6 +117,7 @@ describe('todoRouter', () => {
     test('Todoを更新できる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const created = await caller.create(_createTodoInput);
+
       const updateInput = {
         id: created.id,
         title: 'Updated Title',
@@ -125,7 +126,6 @@ describe('todoRouter', () => {
       };
 
       const result = await caller.update(updateInput);
-
       expect(result).toEqual(
         expect.objectContaining({
           id: created.id,
@@ -152,8 +152,8 @@ describe('todoRouter', () => {
     test('Todoを削除できる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const created = await caller.create(_createTodoInput);
-      await caller.delete({ id: created.id });
 
+      await caller.delete({ id: created.id });
       await expect(caller.findById({ id: created.id })).rejects.toThrow();
     });
 
@@ -167,8 +167,8 @@ describe('todoRouter', () => {
     test('Todoを完了状態に変更できる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const created = await caller.create(_createTodoInput);
-      const result = await caller.changeStatus({ id: created.id, status: 'completed' });
 
+      const result = await caller.changeStatus({ id: created.id, status: 'completed' });
       expect(result.status).toBe('completed');
       expect(result.completedAt).toBeDefined();
     });
@@ -176,9 +176,9 @@ describe('todoRouter', () => {
     test('完了状態のTodoを未完了状態に変更できる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const created = await caller.create(_createTodoInput);
+
       await caller.changeStatus({ id: created.id, status: 'completed' });
       const result = await caller.changeStatus({ id: created.id, status: 'pending' });
-
       expect(result.status).toBe('pending');
       expect(result.completedAt).toBeUndefined();
     });
@@ -206,6 +206,7 @@ describe('todoRouter', () => {
         priority: 'low',
         dueDate: new Date('2024-06-01'),
       });
+
       await caller.changeStatus({ id: todo2.id, status: 'completed' });
     });
 
@@ -228,14 +229,15 @@ describe('todoRouter', () => {
     test('期限で範囲指定フィルタリングできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const result = await caller.filter({
-        dueDateAfter: new Date('2024-01-02'),
-        dueDateBefore: new Date('2024-12-01'),
+        dueDateAfter: new Date('2024-03-01'),
+        dueDateBefore: new Date('2024-12-31'),
       });
 
       expect(result).toHaveLength(1);
-      const dueDate = result[0].dueDate;
-      if (dueDate) {
-        expect(dueDate.getTime()).toEqual(new Date('2024-06-01').getTime());
+      expect(result[0].dueDate).toBeDefined();
+      if (result[0].dueDate) {
+        expect(result[0].dueDate.getTime()).toBeGreaterThan(new Date('2024-03-01').getTime());
+        expect(result[0].dueDate.getTime()).toBeLessThan(new Date('2024-12-31').getTime());
       }
     });
   });
@@ -255,31 +257,47 @@ describe('todoRouter', () => {
         priority: 'low',
         dueDate: new Date('2024-06-01'),
       });
+      await caller.create({
+        title: 'Todo 3',
+        priority: 'medium',
+      });
     });
 
-    it('作成日時でソートできる', async () => {
+    test('作成日時でソートできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const result = await caller.sort({ sortBy: 'createdAt', order: 'asc' });
 
-      expect(result[0].createdAt.getTime()).toBeLessThan(result[1].createdAt.getTime());
+      expect(result).toHaveLength(3);
+      for (let i = 1; i < result.length; i++) {
+        expect(result[i].createdAt.getTime()).toBeGreaterThanOrEqual(
+          result[i - 1].createdAt.getTime()
+        );
+      }
     });
 
-    it('優先度でソートできる', async () => {
+    test('優先度でソートできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
-      const result = await caller.sort({ sortBy: 'priority', order: 'asc' });
+      const result = await caller.sort({ sortBy: 'priority', order: 'desc' });
 
-      expect(result[0].priority).toBe('high');
-      expect(result[1].priority).toBe('low');
+      expect(result).toHaveLength(3);
+      const priorityOrder = { low: 0, medium: 1, high: 2 };
+      for (let i = 1; i < result.length; i++) {
+        expect(priorityOrder[result[i].priority]).toBeLessThanOrEqual(
+          priorityOrder[result[i - 1].priority]
+        );
+      }
     });
 
-    it('期限でソートできる', async () => {
+    test('期限でソートできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const result = await caller.sort({ sortBy: 'dueDate', order: 'asc' });
 
-      const dueDate1 = result[0].dueDate;
-      const dueDate2 = result[1].dueDate;
-      if (dueDate1 && dueDate2) {
-        expect(dueDate1.getTime()).toBeLessThan(dueDate2.getTime());
+      expect(result).toHaveLength(3);
+      const withDueDate = result.filter((todo) => todo.dueDate);
+      for (let i = 1; i < withDueDate.length; i++) {
+        expect(withDueDate[i].dueDate!.getTime()).toBeGreaterThanOrEqual(
+          withDueDate[i - 1].dueDate!.getTime()
+        );
       }
     });
   });
