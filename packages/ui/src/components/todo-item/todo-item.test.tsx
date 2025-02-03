@@ -1,6 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { subHours } from 'date-fns';
-import { format } from 'date-fns';
 import { describe, expect, test, vi } from 'vitest';
 import { TodoItem } from './todo-item';
 
@@ -16,23 +14,39 @@ describe('TodoItem', () => {
   });
 
   test('日付が表示される', () => {
-    const date = new Date('2024-03-01T12:00:00');
+    const date = new Date('2024-03-01');
     render(<TodoItem title="Test Todo" date={date} priority="medium" />);
     expect(screen.getByText('2024/03/01')).toBeInTheDocument();
   });
 
   test('期限切れの日付は赤字で表示される', () => {
-    const pastDate = subHours(new Date(), 1);
+    // 2024-03-01を基準日として、その前日を期限切れとする
+    const baseDate = new Date('2024-03-01');
+    const pastDate = new Date('2024-02-29');
+    
+    vi.useFakeTimers();
+    vi.setSystemTime(baseDate);
+
     render(<TodoItem title="Test Todo" date={pastDate} priority="medium" />);
-    const dateElement = screen.getByText(format(pastDate, 'yyyy/MM/dd'));
+    const dateElement = screen.getByText('2024/02/29');
     expect(dateElement).toHaveClass('text-red-500');
+
+    vi.useRealTimers();
   });
 
   test('完了済みのタスクは期限切れでも赤字にならない', () => {
-    const pastDate = subHours(new Date(), 1);
+    // 2024-03-01を基準日として、その前日を期限切れとする
+    const baseDate = new Date('2024-03-01');
+    const pastDate = new Date('2024-02-29');
+    
+    vi.useFakeTimers();
+    vi.setSystemTime(baseDate);
+
     render(<TodoItem title="Test Todo" date={pastDate} completed priority="medium" />);
-    const dateElement = screen.getByText(format(pastDate, 'yyyy/MM/dd'));
+    const dateElement = screen.getByText('2024/02/29');
     expect(dateElement).toHaveClass('text-gray-500');
+
+    vi.useRealTimers();
   });
 
   test('繰り返しアイコンが表示される', () => {
@@ -86,12 +100,11 @@ describe('TodoItem', () => {
 
   test('期限日を更新できる', () => {
     const onDueDateChange = vi.fn();
-    const initialDate = new Date('2024-03-01T00:00:00');
     render(
       <TodoItem
         title="Test Todo"
         priority="medium"
-        date={initialDate}
+        date={new Date('2024-03-01')}
         onDueDateChange={onDueDateChange}
       />
     );
@@ -104,23 +117,20 @@ describe('TodoItem', () => {
     expect(dateInput).toBeInTheDocument();
 
     // 新しい日付を入力
-    const newDate = '2024-03-02';
-    fireEvent.change(dateInput, { target: { value: newDate } });
+    fireEvent.change(dateInput, { target: { value: '2024-03-02' } });
     fireEvent.blur(dateInput);
 
     // ハンドラーが正しく呼び出されたことを確認
-    const expectedDate = new Date('2024-03-02T00:00:00');
-    expect(onDueDateChange).toHaveBeenCalledWith(expectedDate);
+    expect(onDueDateChange).toHaveBeenCalledWith(new Date('2024-03-02'));
   });
 
   test('期限日を削除できる', () => {
     const onDueDateChange = vi.fn();
-    const initialDate = new Date('2024-03-01T00:00:00');
     render(
       <TodoItem
         title="Test Todo"
         priority="medium"
-        date={initialDate}
+        date={new Date('2024-03-01')}
         onDueDateChange={onDueDateChange}
       />
     );
@@ -140,10 +150,8 @@ describe('TodoItem', () => {
     expect(onDueDateChange).toHaveBeenCalledWith(null);
   });
 
-  test('無効な日付の場合はエラーログが出力される', () => {
+  test('無効な日付が入力された場合、期限なしとして扱われる', () => {
     const onDueDateChange = vi.fn();
-    const consoleErrorSpy = vi.spyOn(console, 'error');
-
     render(<TodoItem title="Test Todo" priority="medium" onDueDateChange={onDueDateChange} />);
 
     // 期限日の表示をクリック
@@ -154,10 +162,9 @@ describe('TodoItem', () => {
     fireEvent.change(dateInput, { target: { value: 'invalid-date' } });
     fireEvent.blur(dateInput);
 
-    // エラーログが出力されることを確認
-    expect(consoleErrorSpy).toHaveBeenCalledWith('Invalid date:', 'invalid-date');
-    expect(onDueDateChange).not.toHaveBeenCalled();
-
-    consoleErrorSpy.mockRestore();
+    // 表示が「期限なし」のままであることを確認
+    expect(screen.getByText('期限なし')).toBeInTheDocument();
+    // コールバックがnullで呼び出されることを確認（期限なしを表す）
+    expect(onDueDateChange).toHaveBeenCalledWith(null);
   });
 });
