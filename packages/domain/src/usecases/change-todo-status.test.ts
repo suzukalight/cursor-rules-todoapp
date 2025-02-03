@@ -1,69 +1,158 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Todo } from '../entities/todo';
 import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto } from '../todo/todo';
 import { ChangeTodoStatusUseCase } from './change-todo-status';
 
 describe('ChangeTodoStatusUseCase', () => {
   const mockTodoRepository: TodoRepository = {
-    save: vi.fn(),
-    findById: vi.fn(),
     findAll: vi.fn(),
+    findById: vi.fn(),
+    save: vi.fn(),
     delete: vi.fn(),
     transaction: vi.fn(),
   };
 
   const useCase = new ChangeTodoStatusUseCase(mockTodoRepository);
 
-  it('Todoを完了状態に変更できる', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'pending' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  const mockPendingTodoDto: TodoDto = {
+    id: 'test-id',
+    title: 'テストタスク',
+    description: 'テストの説明',
+    status: 'pending',
+    priority: 'medium',
+    dueDate: new Date('2024-03-21'),
+    completedAt: undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-    await useCase.execute({ id: todo.id, action: 'complete' });
+  const mockCompletedTodoDto: TodoDto = {
+    ...mockPendingTodoDto,
+    status: 'completed',
+    completedAt: new Date(),
+  };
 
-    expect(mockTodoRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'completed',
-        completedAt: expect.any(Date),
-      })
-    );
+  it('正常系: Todoを完了状態に変更できること', async () => {
+    // Arrange
+    const input = {
+      id: 'test-id',
+      status: 'completed' as const,
+    };
+
+    vi.mocked(mockTodoRepository.findById).mockResolvedValue(mockPendingTodoDto);
+    vi.mocked(mockTodoRepository.save).mockResolvedValue(mockCompletedTodoDto);
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value).toEqual(mockCompletedTodoDto);
+      expect(result.value.status).toBe('completed');
+      expect(result.value.completedAt).toBeDefined();
+    }
   });
 
-  it('Todoをキャンセル状態に変更できる', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'pending' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  it('正常系: Todoを未完了状態に変更できること', async () => {
+    // Arrange
+    const input = {
+      id: 'test-id',
+      status: 'pending' as const,
+    };
 
-    await useCase.execute({ id: todo.id, action: 'cancel' });
+    vi.mocked(mockTodoRepository.findById).mockResolvedValue(mockCompletedTodoDto);
+    vi.mocked(mockTodoRepository.save).mockResolvedValue(mockPendingTodoDto);
 
-    expect(mockTodoRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 'cancelled',
-      })
-    );
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isOk()).toBe(true);
+    if (result.isOk()) {
+      expect(result.value).toEqual(mockPendingTodoDto);
+      expect(result.value.status).toBe('pending');
+      expect(result.value.completedAt).toBeUndefined();
+    }
   });
 
-  it('存在しないTodoの場合はエラーを返す', async () => {
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(null);
+  it('異常系: 存在しないTodoの場合はエラーを返すこと', async () => {
+    // Arrange
+    const input = {
+      id: 'non-existent-id',
+      status: 'completed' as const,
+    };
 
-    await expect(useCase.execute({ id: 'non-existent-id', action: 'complete' })).rejects.toThrow(
-      'Todo not found'
-    );
+    vi.mocked(mockTodoRepository.findById).mockResolvedValue(null);
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('Todo not found');
+    }
   });
 
-  it('既に完了済みのTodoを完了しようとするとエラーを返す', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'completed' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  it('異常系: すでに完了状態のTodoを完了状態に変更しようとした場合はエラーを返すこと', async () => {
+    // Arrange
+    const input = {
+      id: 'test-id',
+      status: 'completed' as const,
+    };
 
-    await expect(useCase.execute({ id: todo.id, action: 'complete' })).rejects.toThrow(
-      'Todo is already completed'
-    );
+    vi.mocked(mockTodoRepository.findById).mockResolvedValue(mockCompletedTodoDto);
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('Todo is already completed');
+    }
   });
 
-  it('既にキャンセル済みのTodoをキャンセルしようとするとエラーを返す', async () => {
-    const todo = Todo.create({ title: 'test todo', status: 'cancelled' });
-    vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  it('異常系: すでに未完了状態のTodoを未完了状態に変更しようとした場合はエラーを返すこと', async () => {
+    // Arrange
+    const input = {
+      id: 'test-id',
+      status: 'pending' as const,
+    };
 
-    await expect(useCase.execute({ id: todo.id, action: 'cancel' })).rejects.toThrow(
-      'Todo is already cancelled'
-    );
+    vi.mocked(mockTodoRepository.findById).mockResolvedValue(mockPendingTodoDto);
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('Todo is already pending');
+    }
+  });
+
+  it('異常系: リポジトリでエラーが発生した場合はエラーを返すこと', async () => {
+    // Arrange
+    const input = {
+      id: 'test-id',
+      status: 'completed' as const,
+    };
+
+    vi.mocked(mockTodoRepository.findById).mockRejectedValue(new Error('Repository error'));
+
+    // Act
+    const result = await useCase.execute(input);
+
+    // Assert
+    expect(result.isErr()).toBe(true);
+    if (result.isErr()) {
+      expect(result.error).toBeInstanceOf(Error);
+      expect(result.error.message).toBe('Repository error');
+    }
   });
 });

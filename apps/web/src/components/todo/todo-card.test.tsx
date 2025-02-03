@@ -5,14 +5,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TodoCard } from './todo-card';
 
 describe('TodoCardコンポーネント', () => {
-  const mockTodo = Todo.create({
-    title: 'テストタスク',
-    description: 'テストの説明文',
-    status: 'pending',
-  });
+  const createMockTodo = (overrides = {}) =>
+    Todo.create({
+      title: 'テストタスク',
+      description: 'テストの説明文',
+      priority: 'high',
+      dueDate: new Date('2024-12-31'),
+      ...overrides,
+    });
 
+  const mockTodo = createMockTodo();
   const mockOnUpdateTitle = vi.fn();
   const mockOnUpdateStatus = vi.fn();
+  const mockOnUpdatePriority = vi.fn();
+  const mockOnUpdateDueDate = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -24,11 +30,61 @@ describe('TodoCardコンポーネント', () => {
         todo={mockTodo}
         onUpdateTitle={mockOnUpdateTitle}
         onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
       />
     );
 
     expect(screen.getByText('テストタスク')).toBeInTheDocument();
-    expect(screen.getByText('説明を表示')).toBeInTheDocument();
+    expect(screen.getByText('テストの説明文')).toBeInTheDocument();
+  });
+
+  it('優先度が正しく表示される', () => {
+    render(
+      <TodoCard
+        todo={mockTodo}
+        onUpdateTitle={mockOnUpdateTitle}
+        onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
+      />
+    );
+
+    const priorityIcon = screen.getByLabelText('優先度: 高');
+    expect(priorityIcon).toBeInTheDocument();
+    expect(priorityIcon).toHaveClass('text-red-500');
+  });
+
+  it('期限日が正しく表示される', () => {
+    render(
+      <TodoCard
+        todo={mockTodo}
+        onUpdateTitle={mockOnUpdateTitle}
+        onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
+      />
+    );
+
+    expect(screen.getByText('2024/12/31')).toBeInTheDocument();
+  });
+
+  it('期限切れの場合、警告が表示される', () => {
+    const pastDueTodo = createMockTodo({
+      dueDate: new Date('2024-01-01'),
+    });
+
+    render(
+      <TodoCard
+        todo={pastDueTodo}
+        onUpdateTitle={mockOnUpdateTitle}
+        onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
+      />
+    );
+
+    expect(screen.getByText('期限切れ')).toBeInTheDocument();
   });
 
   it('タイトルを編集できる', () => {
@@ -37,48 +93,60 @@ describe('TodoCardコンポーネント', () => {
         todo={mockTodo}
         onUpdateTitle={mockOnUpdateTitle}
         onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
       />
     );
 
-    // 編集ボタンをクリック
-    const editButton = screen.getByRole('button', { name: /edit/i });
-    fireEvent.click(editButton);
+    const titleButton = screen.getByRole('button', { name: /タスク「テストタスク」を編集/ });
+    fireEvent.click(titleButton);
 
-    // 入力フィールドが表示される
-    const input = screen.getByRole('textbox');
-    expect(input).toBeInTheDocument();
-    expect(input).toHaveValue('テストタスク');
-
-    // 新しいタイトルを入力
+    const input = screen.getByRole('textbox', { name: 'タスクのタイトルを編集' });
     fireEvent.change(input, { target: { value: '更新されたタスク' } });
-    fireEvent.blur(input);
+    fireEvent.submit(input);
 
-    // onUpdateTitleが呼ばれる
     expect(mockOnUpdateTitle).toHaveBeenCalledWith(mockTodo.id, '更新されたタスク');
   });
 
-  it('説明文を表示/非表示できる', () => {
+  it('優先度を変更できる', () => {
     render(
       <TodoCard
         todo={mockTodo}
         onUpdateTitle={mockOnUpdateTitle}
         onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
       />
     );
 
-    // 初期状態では説明文は非表示
-    expect(screen.queryByText('テストの説明文')).not.toBeInTheDocument();
+    const priorityButton = screen.getByLabelText('優先度: 高');
+    fireEvent.click(priorityButton);
 
-    // 説明を表示ボタンをクリック
-    const toggleButton = screen.getByText('説明を表示');
-    fireEvent.click(toggleButton);
+    const mediumOption = screen.getByRole('option', { name: '中' });
+    fireEvent.click(mediumOption);
 
-    // 説明文が表示される
-    expect(screen.getByText('テストの説明文')).toBeInTheDocument();
+    expect(mockOnUpdatePriority).toHaveBeenCalledWith(mockTodo.id, 'medium');
+  });
 
-    // もう一度クリックで非表示
-    fireEvent.click(screen.getByText('説明を閉じる'));
-    expect(screen.queryByText('テストの説明文')).not.toBeInTheDocument();
+  it('期限日を変更できる', () => {
+    render(
+      <TodoCard
+        todo={mockTodo}
+        onUpdateTitle={mockOnUpdateTitle}
+        onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
+      />
+    );
+
+    const dateButton = screen.getByText('2024/12/31');
+    fireEvent.click(dateButton);
+
+    const newDate = new Date('2025-01-01');
+    const dateCell = screen.getByRole('gridcell', { name: '2025-01-01' });
+    fireEvent.click(dateCell);
+
+    expect(mockOnUpdateDueDate).toHaveBeenCalledWith(mockTodo.id, newDate);
   });
 
   it('ステータスを更新できる', () => {
@@ -87,17 +155,17 @@ describe('TodoCardコンポーネント', () => {
         todo={mockTodo}
         onUpdateTitle={mockOnUpdateTitle}
         onUpdateStatus={mockOnUpdateStatus}
+        onUpdatePriority={mockOnUpdatePriority}
+        onUpdateDueDate={mockOnUpdateDueDate}
       />
     );
 
-    // 完了ボタンをクリック
-    const completeButton = screen.getByText('完了');
+    const completeButton = screen.getByLabelText('タスクを完了にする');
     fireEvent.click(completeButton);
     expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'completed');
 
-    // キャンセルボタンをクリック
-    const cancelButton = screen.getByText('キャンセル');
-    fireEvent.click(cancelButton);
-    expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'cancelled');
+    const inProgressButton = screen.getByLabelText('タスクを進行中にする');
+    fireEvent.click(inProgressButton);
+    expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'in-progress');
   });
 });

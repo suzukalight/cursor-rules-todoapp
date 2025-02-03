@@ -1,92 +1,151 @@
+import { z } from 'zod';
+
 export type TodoId = string;
 
-export type TodoStatus = 'pending' | 'completed' | 'cancelled';
+export type TodoStatus = 'pending' | 'completed';
 
-export interface TodoProps {
-  id: TodoId;
-  title: string;
-  description?: string;
-  status: TodoStatus;
-  createdAt: Date;
-  updatedAt: Date;
-  completedAt?: Date;
-}
+export type TodoPriority = 'high' | 'medium' | 'low';
+
+export const todoSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  status: z.enum(['pending', 'completed']),
+  priority: z.enum(['high', 'medium', 'low']),
+  dueDate: z.date().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  completedAt: z.date().optional(),
+});
+
+export type TodoDto = z.infer<typeof todoSchema>;
 
 export class Todo {
-  private readonly props: TodoProps;
+  readonly #id: TodoId;
+  #title: string;
+  #description?: string;
+  #status: TodoStatus;
+  #priority: TodoPriority;
+  #dueDate?: Date;
+  readonly #createdAt: Date;
+  #updatedAt: Date;
+  #completedAt?: Date;
 
-  private constructor(props: TodoProps) {
-    this.props = props;
+  private constructor(dto: TodoDto) {
+    this.#id = dto.id;
+    this.#title = dto.title;
+    this.#description = dto.description;
+    this.#status = dto.status;
+    this.#priority = dto.priority;
+    this.#dueDate = dto.dueDate;
+    this.#createdAt = dto.createdAt;
+    this.#updatedAt = dto.updatedAt;
+    this.#completedAt = dto.completedAt;
   }
 
-  public static create(props: Omit<TodoProps, 'id' | 'createdAt' | 'updatedAt'>): Todo {
+  static create(input: Omit<TodoDto, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'completedAt'>) {
     const now = new Date();
-    return new Todo({
-      ...props,
+    const dto = todoSchema.parse({
       id: crypto.randomUUID(),
+      status: 'pending',
       createdAt: now,
       updatedAt: now,
+      completedAt: undefined,
+      ...input,
     });
+    return new Todo(dto);
   }
 
-  public static reconstruct(props: TodoProps): Todo {
-    return new Todo(props);
+  static reconstruct(dto: TodoDto) {
+    const validatedDto = todoSchema.parse(dto);
+    return new Todo(validatedDto);
   }
 
-  get id(): TodoId {
-    return this.props.id;
+  get id() {
+    return this.#id;
   }
 
-  get title(): string {
-    return this.props.title;
+  get title() {
+    return this.#title;
   }
 
-  get description(): string | undefined {
-    return this.props.description;
+  get description() {
+    return this.#description;
   }
 
-  get status(): TodoStatus {
-    return this.props.status;
+  get status() {
+    return this.#status;
   }
 
-  get createdAt(): Date {
-    return this.props.createdAt;
+  get priority() {
+    return this.#priority;
   }
 
-  get updatedAt(): Date {
-    return this.props.updatedAt;
+  get dueDate() {
+    return this.#dueDate;
   }
 
-  get completedAt(): Date | undefined {
-    return this.props.completedAt;
+  get createdAt() {
+    return this.#createdAt;
   }
 
-  public complete(): void {
-    if (this.status === 'completed') {
-      throw new Error('Todo is already completed');
-    }
-
-    this.props.status = 'completed';
-    this.props.completedAt = new Date();
-    this.props.updatedAt = new Date();
+  get updatedAt() {
+    return this.#updatedAt;
   }
 
-  public cancel(): void {
-    if (this.status === 'cancelled') {
-      throw new Error('Todo is already cancelled');
-    }
-
-    this.props.status = 'cancelled';
-    this.props.updatedAt = new Date();
+  get completedAt() {
+    return this.#completedAt;
   }
 
-  public updateTitle(title: string): void {
-    this.props.title = title;
-    this.props.updatedAt = new Date();
+  updateTitle(title: string) {
+    const dto = todoSchema.pick({ title: true }).parse({ title });
+    this.#title = dto.title;
+    this.#updatedAt = new Date();
   }
 
-  public updateDescription(description: string): void {
-    this.props.description = description;
-    this.props.updatedAt = new Date();
+  updateDescription(description: string) {
+    const dto = todoSchema.pick({ description: true }).parse({ description });
+    this.#description = dto.description;
+    this.#updatedAt = new Date();
+  }
+
+  updatePriority(priority: TodoPriority) {
+    const dto = todoSchema.pick({ priority: true }).parse({ priority });
+    this.#priority = dto.priority;
+    this.#updatedAt = new Date();
+  }
+
+  updateDueDate(dueDate?: Date) {
+    const dto = todoSchema.pick({ dueDate: true }).parse({ dueDate });
+    this.#dueDate = dto.dueDate;
+    this.#updatedAt = new Date();
+  }
+
+  complete() {
+    if (this.#status === 'completed') return;
+    this.#status = 'completed';
+    this.#completedAt = new Date();
+    this.#updatedAt = new Date();
+  }
+
+  cancel() {
+    if (this.#status === 'pending') return;
+    this.#status = 'pending';
+    this.#completedAt = undefined;
+    this.#updatedAt = new Date();
+  }
+
+  toJSON(): TodoDto {
+    return {
+      id: this.#id,
+      title: this.#title,
+      description: this.#description,
+      status: this.#status,
+      priority: this.#priority,
+      dueDate: this.#dueDate,
+      createdAt: this.#createdAt,
+      updatedAt: this.#updatedAt,
+      completedAt: this.#completedAt,
+    };
   }
 }

@@ -1,61 +1,138 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Todo } from '../entities/todo';
-import { TodoNotFoundError } from '../errors/todo-error';
 import type { TodoRepository } from '../repositories/todo-repository';
+import type { TodoDto } from '../todo/todo';
 import { FindTodoUseCase } from './find-todo';
 
 describe('FindTodoUseCase', () => {
   const mockTodoRepository: TodoRepository = {
-    save: vi.fn(),
-    findById: vi.fn(),
     findAll: vi.fn(),
+    findById: vi.fn(),
+    save: vi.fn(),
     delete: vi.fn(),
     transaction: vi.fn(),
   };
 
   const useCase = new FindTodoUseCase(mockTodoRepository);
 
-  describe('findById', () => {
-    it('指定したIDのTodoを取得できる', async () => {
-      const todo = Todo.create({ title: 'test todo', status: 'pending' });
-      vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(todo);
+  const mockTodoDto1: TodoDto = {
+    id: 'test-id-1',
+    title: 'テストタスク1',
+    description: 'テストの説明1',
+    status: 'pending',
+    priority: 'high',
+    dueDate: new Date('2024-03-21'),
+    completedAt: undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-      const result = await useCase.findById(todo.id);
+  const mockTodoDto2: TodoDto = {
+    id: 'test-id-2',
+    title: 'テストタスク2',
+    description: 'テストの説明2',
+    status: 'completed',
+    priority: 'medium',
+    dueDate: new Date('2024-03-22'),
+    completedAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
-      expect(result).toEqual(todo);
-      expect(mockTodoRepository.findById).toHaveBeenCalledWith(todo.id);
+  describe('findAll', () => {
+    it('正常系: すべてのTodoを取得できること', async () => {
+      // Arrange
+      const mockTodos = [mockTodoDto1, mockTodoDto2];
+      vi.mocked(mockTodoRepository.findAll).mockResolvedValue(mockTodos);
+
+      // Act
+      const result = await useCase.findAll();
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toEqual(mockTodos);
+        expect(result.value).toHaveLength(2);
+        expect(result.value[0]).toEqual(mockTodoDto1);
+        expect(result.value[1]).toEqual(mockTodoDto2);
+      }
     });
 
-    it('存在しないTodoの場合はエラーを返す', async () => {
-      const id = 'non-existent-id';
-      vi.spyOn(mockTodoRepository, 'findById').mockResolvedValueOnce(null);
+    it('正常系: Todoが存在しない場合は空配列を返すこと', async () => {
+      // Arrange
+      vi.mocked(mockTodoRepository.findAll).mockResolvedValue([]);
 
-      await expect(useCase.findById(id)).rejects.toThrow(TodoNotFoundError);
-      expect(mockTodoRepository.findById).toHaveBeenCalledWith(id);
+      // Act
+      const result = await useCase.findAll();
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toEqual([]);
+        expect(result.value).toHaveLength(0);
+      }
+    });
+
+    it('異常系: リポジトリでエラーが発生した場合はエラーを返すこと', async () => {
+      // Arrange
+      vi.mocked(mockTodoRepository.findAll).mockRejectedValue(new Error('Repository error'));
+
+      // Act
+      const result = await useCase.findAll();
+
+      // Assert
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(Error);
+        expect(result.error.message).toBe('Repository error');
+      }
     });
   });
 
-  describe('findAll', () => {
-    it('全てのTodoを取得できる', async () => {
-      const todos = [
-        Todo.create({ title: 'todo 1', status: 'pending' }),
-        Todo.create({ title: 'todo 2', status: 'pending' }),
-      ];
-      vi.spyOn(mockTodoRepository, 'findAll').mockResolvedValueOnce(todos);
+  describe('findById', () => {
+    it('正常系: 指定したIDのTodoを取得できること', async () => {
+      // Arrange
+      vi.mocked(mockTodoRepository.findById).mockResolvedValue(mockTodoDto1);
 
-      const result = await useCase.findAll();
+      // Act
+      const result = await useCase.findById('test-id-1');
 
-      expect(result).toEqual(todos);
-      expect(mockTodoRepository.findAll).toHaveBeenCalled();
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value).toEqual(mockTodoDto1);
+        expect(result.value.id).toBe('test-id-1');
+        expect(result.value.title).toBe('テストタスク1');
+      }
     });
 
-    it('Todoが存在しない場合は空配列を返す', async () => {
-      vi.spyOn(mockTodoRepository, 'findAll').mockResolvedValueOnce([]);
+    it('異常系: 存在しないIDの場合はエラーを返すこと', async () => {
+      // Arrange
+      vi.mocked(mockTodoRepository.findById).mockResolvedValue(null);
 
-      const result = await useCase.findAll();
+      // Act
+      const result = await useCase.findById('non-existent-id');
 
-      expect(result).toEqual([]);
-      expect(mockTodoRepository.findAll).toHaveBeenCalled();
+      // Assert
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(Error);
+        expect(result.error.message).toBe('Todo not found');
+      }
+    });
+
+    it('異常系: リポジトリでエラーが発生した場合はエラーを返すこと', async () => {
+      // Arrange
+      vi.mocked(mockTodoRepository.findById).mockRejectedValue(new Error('Repository error'));
+
+      // Act
+      const result = await useCase.findById('test-id-1');
+
+      // Assert
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBeInstanceOf(Error);
+        expect(result.error.message).toBe('Repository error');
+      }
     });
   });
 });

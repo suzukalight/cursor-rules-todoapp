@@ -31,7 +31,8 @@ test.describe('基本的なページ表示', () => {
   test('初期状態でTODOが空であることが確認できる', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    const emptyMessage = page.getByText('TODOがありません');
+    await page.waitForSelector('[data-testid="todo-list"]');
+    const emptyMessage = page.getByTestId('empty-todo-message');
     await expect(emptyMessage).toBeVisible({ timeout: 60000 });
   });
 });

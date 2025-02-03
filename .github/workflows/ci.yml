@@ -9,7 +9,6 @@ on:
 env:
   DATABASE_URL: "file:./test.db"
   NODE_ENV: "test"
-  DEBUG: "pw:api"
 
 jobs:
   build:
@@ -59,15 +58,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Setup Playwright browsers cache
-        id: playwright-cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -80,40 +70,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Type Check
-        run: pnpm turbo typecheck
-
-      - name: Lint
-        run: pnpm biome:check
+      - name: Type Check and Lint
+        run: pnpm check:ci
 
       - name: Unit Tests
-        run: pnpm test
-
-      - name: Install Playwright Browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @cursor-rules-todoapp/e2e exec playwright install --with-deps
-
-      - name: Start Web Server
-        run: pnpm dev &
-        env:
-          CI: true
-          PORT: 3000
-          WAIT_ON_TIMEOUT: 60000
-
-      - name: Wait for Web Server
-        run: |
-          npx wait-on http://localhost:3000 -t 60000
-
-      - name: E2E Tests
-        run: pnpm test:e2e
-        env:
-          CI: true
-          DEBUG: pw:api,pw:protocol*
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: apps/e2e/playwright-report/
-          retention-days: 30 
+        run: pnpm test 

@@ -1,11 +1,9 @@
-import type { Todo, TodoId } from '../entities/todo';
+import type { TodoDto } from '../todo/todo';
 
 export interface TodoRepository {
-  save(todo: Todo): Promise<void>;
-  findById(id: TodoId): Promise<Todo | null>;
-  findAll(): Promise<Todo[]>;
-  delete(id: TodoId): Promise<void>;
-
-  // トランザクション管理用のメソッド
+  save(todo: TodoDto): Promise<TodoDto>;
+  findById(id: string): Promise<TodoDto | null>;
+  findAll(): Promise<TodoDto[]>;
+  delete(id: string): Promise<void>;
   transaction<T>(operation: () => Promise<T>): Promise<T>;
 }

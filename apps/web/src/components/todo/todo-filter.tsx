@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@cursor-rules-todoapp/ui';
+import type { ChangeEvent } from 'react';
 
 interface TodoFilterProps {
   status: TodoStatus | 'all';
@@ -32,7 +33,7 @@ export const TodoFilter = ({
           type="text"
           placeholder="タスクを検索..."
           value={searchQuery}
-          onChange={(e) => onSearchQueryChange(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onSearchQueryChange(e.target.value)}
           className="w-full bg-white dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 rounded-lg"
         />
       </div>
