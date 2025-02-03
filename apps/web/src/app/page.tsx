@@ -140,12 +140,33 @@ export default function TodoPage() {
       todo.id === id ? { ...todo, dueDate: dueDate || undefined } : todo
     ));
     try {
+      // APIに送信する前に日付を正しい形式に変換
+      let dueDateForApi: Date | undefined = undefined;
+      if (dueDate) {
+        // 日付が有効かチェック
+        if (Number.isNaN(dueDate.getTime())) {
+          throw new Error('Invalid date');
+        }
+        // 日付のみを抽出して新しいDateオブジェクトを作成
+        const [year, month, day] = dueDate
+          .toISOString()
+          .split('T')[0]
+          .split('-')
+          .map(Number);
+        dueDateForApi = new Date(year, month - 1, day, 0, 0, 0, 0);
+      }
+
       await updateTodoMutation.mutateAsync({
         id,
-        dueDate: dueDate || undefined,
+        dueDate: dueDateForApi,
       });
     } catch (error) {
       console.error('Error updating due date:', error);
+      // エラー時は元の状態に戻す
+      const originalTodo = todos.find((todo) => todo.id === id);
+      setTodos((prev) => prev.map((todo) =>
+        todo.id === id ? { ...todo, dueDate: originalTodo?.dueDate } : todo
+      ));
     }
   };
 

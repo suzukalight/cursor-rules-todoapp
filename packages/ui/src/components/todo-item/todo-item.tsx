@@ -89,8 +89,23 @@ export const TodoItem = ({
                 value={date ? format(date, 'yyyy-MM-dd') : ''}
                 onChange={(e) => {
                   const newValue = e.target.value;
-                  const newDate = newValue ? new Date(newValue) : null;
-                  onDueDateChange?.(newDate);
+                  if (!newValue) {
+                    onDueDateChange?.(null);
+                    return;
+                  }
+                  try {
+                    // 日付文字列を年月日に分解して新しいDateオブジェクトを作成
+                    const [year, month, day] = newValue.split('-').map(Number);
+                    const newDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+                    // 日付が有効かチェック
+                    if (Number.isNaN(newDate.getTime())) {
+                      console.error('Invalid date:', newValue);
+                      return;
+                    }
+                    onDueDateChange?.(newDate);
+                  } catch (error) {
+                    console.error('Error parsing date:', error);
+                  }
                 }}
                 onBlur={() => setEditingDueDate(false)}
                 ref={dateInputRef}
