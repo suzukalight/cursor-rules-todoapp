@@ -1,4 +1,3 @@
-import { Result } from '@cursor-rules-todoapp/common';
 import { describe, expect, it, vi } from 'vitest';
 import type { TodoRepository } from '../repositories/todo-repository';
 import type { TodoDto } from '../todo/todo';

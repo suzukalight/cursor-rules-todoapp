@@ -1,12 +1,8 @@
 import { InMemoryTodoRepository } from '@cursor-rules-todoapp/domain';
 import { TestDatabase } from '@cursor-rules-todoapp/repo-sqlite/src/test-utils/database';
-import type { inferProcedureInput } from '@trpc/server';
 import { afterEach, beforeEach, describe, expect, it, test } from 'vitest';
 import { createContainer } from '../container';
-import { createTestContainer } from '../test-utils/container';
 import { TodoUseCaseImpl } from '../usecases/todo-impl';
-import { appRouter } from './index';
-import type { AppRouter } from './index';
 import { todoRouter } from './todo';
 
 describe('todoRouter', () => {

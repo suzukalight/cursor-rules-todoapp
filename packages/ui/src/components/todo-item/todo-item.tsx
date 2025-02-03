@@ -6,7 +6,6 @@ import {
   parseDateString,
 } from '@cursor-rules-todoapp/common/src/date/date-utils';
 import { Bell, Repeat } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Checkbox } from '../ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select';

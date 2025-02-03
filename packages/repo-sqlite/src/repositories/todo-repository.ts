@@ -5,7 +5,6 @@ import type {
   TodoPriority,
   TodoStatus,
 } from '@cursor-rules-todoapp/domain';
-import { Todo } from '@cursor-rules-todoapp/domain';
 import type { PrismaClient } from '@prisma/client';
 import { TodoMapper } from '../mappers/todo-mapper';
 

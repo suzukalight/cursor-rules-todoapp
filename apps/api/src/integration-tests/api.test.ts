@@ -5,7 +5,7 @@ import { TestDatabase } from '@cursor-rules-todoapp/repo-sqlite/src/test-utils/d
 import { PrismaClient } from '@prisma/client';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import express from 'express';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { handleError } from '../errors';
 import { appRouter } from '../router';
 import { TRPCTestHelper } from '../test-utils/trpc-test-helper';

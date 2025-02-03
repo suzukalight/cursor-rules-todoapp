@@ -1,7 +1,6 @@
 'use client';
 
 import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/common';
-import type { Result } from '@cursor-rules-todoapp/common';
 import type { TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
 import { useEffect, useState } from 'react';
