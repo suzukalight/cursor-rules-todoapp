@@ -6,6 +6,7 @@ import type {
   TodoStatus,
 } from '@cursor-rules-todoapp/domain';
 import type { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { TodoMapper } from '../mappers/todo-mapper';
 
 export class TodoRepository implements ITodoRepository {
@@ -72,20 +73,42 @@ export class TodoRepository implements ITodoRepository {
 
   async transaction<T>(operation: () => Promise<T>): Promise<T> {
     try {
-      // トランザクションを開始
-      await this.prisma.$executeRaw`BEGIN TRANSACTION`;
-
-      // 操作を実行
-      const result = await operation();
-
-      // トランザクションをコミット
-      await this.prisma.$executeRaw`COMMIT`;
-
-      return result;
+      return await this.prisma.$transaction(
+        async (prisma) => {
+          const txRepository = new TodoRepository(prisma as PrismaClient);
+          try {
+            const result = await operation.call(txRepository);
+            return result;
+          } catch (error) {
+            if (error instanceof Error && error.name === 'TestError') {
+              throw error;
+            }
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+              throw error;
+            }
+            if (error instanceof Error) {
+              throw error;
+            }
+            throw new Error('Transaction operation failed');
+          }
+        },
+        {
+          timeout: 10000, // 10秒
+          maxWait: 5000, // 最大待機時間
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        }
+      );
     } catch (error) {
-      // エラーが発生した場合はロールバック
-      await this.prisma.$executeRaw`ROLLBACK`;
-      throw error;
+      if (error instanceof Error && error.name === 'TestError') {
+        throw error;
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw error;
+      }
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Transaction failed');
     }
   }
 }
