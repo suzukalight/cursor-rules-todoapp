@@ -1,5 +1,9 @@
 import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/common';
 import {
+  formatDateForDisplay,
+  isDateOverdue,
+} from '@cursor-rules-todoapp/common/src/date/date-utils';
+import {
   Button,
   Card,
   CardContent,
@@ -38,7 +42,7 @@ interface TodoCardProps {
   onUpdateTitle: (id: string, title: string) => void;
   onUpdateStatus: (id: string, status: TodoStatus) => void;
   onUpdatePriority: (id: string, priority: TodoPriority) => void;
-  onUpdateDueDate: (id: string, dueDate: Date | undefined) => void;
+  onUpdateDueDate: (id: string, dueDate: Date | null) => void;
   'data-testid'?: string;
 }
 
@@ -61,7 +65,7 @@ export const TodoCard = ({
   };
 
   const isCompleted = todo.status === 'completed';
-  const isPastDue = todo.dueDate && new Date() > todo.dueDate && !isCompleted;
+  const isPastDue = isDateOverdue(todo.dueDate ?? null, isCompleted);
 
   const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -75,7 +79,7 @@ export const TodoCard = ({
   };
 
   const handleDueDateChange = (date: Date | undefined) => {
-    onUpdateDueDate(todo.id, date);
+    onUpdateDueDate(todo.id, date ?? null);
     setIsEditingDueDate(false);
   };
 
@@ -145,9 +149,7 @@ export const TodoCard = ({
                     className={cn('h-auto p-0', isPastDue && 'text-red-500 dark:text-red-400')}
                   >
                     <Calendar className="h-4 w-4 mr-1" />
-                    <span className="text-sm">
-                      {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : '期限日を設定'}
-                    </span>
+                    <span className="text-sm">{formatDateForDisplay(todo.dueDate ?? null)}</span>
                     {isPastDue && (
                       <span className="ml-2 inline-flex items-center">
                         <AlertCircle className="h-4 w-4 text-red-500" />
@@ -157,10 +159,7 @@ export const TodoCard = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <DatePicker
-                    selected={todo.dueDate ? new Date(todo.dueDate) : undefined}
-                    onSelect={handleDueDateChange}
-                  />
+                  <DatePicker selected={todo.dueDate ?? undefined} onSelect={handleDueDateChange} />
                 </PopoverContent>
               </Popover>
             </div>
