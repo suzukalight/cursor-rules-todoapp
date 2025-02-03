@@ -23,7 +23,7 @@ describe('TodoItem', () => {
     // 2024-03-01を基準日として、その前日を期限切れとする
     const baseDate = new Date('2024-03-01');
     const pastDate = new Date('2024-02-29');
-    
+
     vi.useFakeTimers();
     vi.setSystemTime(baseDate);
 
@@ -38,7 +38,7 @@ describe('TodoItem', () => {
     // 2024-03-01を基準日として、その前日を期限切れとする
     const baseDate = new Date('2024-03-01');
     const pastDate = new Date('2024-02-29');
-    
+
     vi.useFakeTimers();
     vi.setSystemTime(baseDate);
 
