@@ -24,7 +24,7 @@ export class SortTodoUseCase {
               : b.createdAt.getTime() - a.createdAt.getTime();
 
           case 'priority': {
-            const priorityOrder = { low: 0, medium: 1, high: 2 };
+            const priorityOrder = { high: 2, medium: 1, low: 0 } as const;
             const aValue = priorityOrder[a.priority];
             const bValue = priorityOrder[b.priority];
             return input.order === 'asc' ? aValue - bValue : bValue - aValue;

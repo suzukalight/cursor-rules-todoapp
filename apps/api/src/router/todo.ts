@@ -45,7 +45,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
       const todo = await todoUseCase.create(input);
       if (!todo.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'BAD_REQUEST',
           message: todo.error.message,
         });
       }
@@ -56,7 +56,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
       const todos = await todoUseCase.findAll();
       if (!todos.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'BAD_REQUEST',
           message: todos.error.message,
         });
       }
@@ -78,7 +78,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
       const todo = await todoUseCase.update(input);
       if (!todo.isOk()) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
+          code: 'BAD_REQUEST',
           message: todo.error.message,
         });
       }
@@ -89,7 +89,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
       const result = await todoUseCase.delete(input);
       if (!result.isOk()) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
+          code: 'BAD_REQUEST',
           message: result.error.message,
         });
       }
@@ -103,7 +103,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
           : await todoUseCase.cancel(input);
       if (!todo.isOk()) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
+          code: 'BAD_REQUEST',
           message: todo.error.message,
         });
       }
@@ -114,7 +114,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
       const todos = await todoUseCase.filter(input);
       if (!todos.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'BAD_REQUEST',
           message: todos.error.message,
         });
       }
@@ -125,7 +125,7 @@ export const todoRouter = ({ todoUseCase }: { todoUseCase: TodoUseCase }) =>
       const todos = await todoUseCase.sort(input);
       if (!todos.isOk()) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: 'BAD_REQUEST',
           message: todos.error.message,
         });
       }

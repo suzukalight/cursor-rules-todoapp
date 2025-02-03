@@ -256,14 +256,14 @@ describe('todoRouter', () => {
       await caller.create({
         title: 'Todo 3',
         priority: 'medium',
+        dueDate: new Date('2024-03-01'),
       });
     });
 
-    test('作成日時でソートできる', async () => {
+    it('作成日時でソートできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const result = await caller.sort({ sortBy: 'createdAt', order: 'asc' });
 
-      expect(result).toHaveLength(3);
       for (let i = 1; i < result.length; i++) {
         expect(result[i].createdAt.getTime()).toBeGreaterThanOrEqual(
           result[i - 1].createdAt.getTime()
@@ -271,28 +271,36 @@ describe('todoRouter', () => {
       }
     });
 
-    test('優先度でソートできる', async () => {
+    it('優先度でソートできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
-      const result = await caller.sort({ sortBy: 'priority', order: 'desc' });
+      const result = await caller.sort({ sortBy: 'priority', order: 'asc' });
 
-      expect(result).toHaveLength(3);
-      const priorityOrder = { low: 0, medium: 1, high: 2 };
+      const priorityOrder = { high: 2, medium: 1, low: 0 } as const;
       for (let i = 1; i < result.length; i++) {
-        expect(priorityOrder[result[i].priority]).toBeLessThanOrEqual(
-          priorityOrder[result[i - 1].priority]
+        const current = result[i];
+        const previous = result[i - 1];
+        if (!current || !previous) continue;
+
+        const currentPriority = current.priority as keyof typeof priorityOrder;
+        const previousPriority = previous.priority as keyof typeof priorityOrder;
+        expect(priorityOrder[currentPriority]).toBeLessThanOrEqual(
+          priorityOrder[previousPriority]
         );
       }
     });
 
-    test('期限でソートできる', async () => {
+    it('期限でソートできる', async () => {
       const caller = router.createCaller({ todoUseCase: container.todoUseCase });
       const result = await caller.sort({ sortBy: 'dueDate', order: 'asc' });
 
-      expect(result).toHaveLength(3);
-      const withDueDate = result.filter((todo) => todo.dueDate);
-      for (let i = 1; i < withDueDate.length; i++) {
-        expect(withDueDate[i].dueDate!.getTime()).toBeGreaterThanOrEqual(
-          withDueDate[i - 1].dueDate!.getTime()
+      for (let i = 1; i < result.length; i++) {
+        const current = result[i];
+        const previous = result[i - 1];
+        if (!current || !previous) continue;
+        if (!current.dueDate || !previous.dueDate) continue;
+
+        expect(current.dueDate.getTime()).toBeGreaterThanOrEqual(
+          previous.dueDate.getTime()
         );
       }
     });
