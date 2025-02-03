@@ -1,4 +1,5 @@
 import type { Express } from 'express';
+import type { Response } from 'superagent';
 import request from 'supertest';
 import { expect } from 'vitest';
 
@@ -8,7 +9,7 @@ interface APIResponse<T> {
   error?: {
     message: string;
     code: string;
-    [key: string]: unknown;
+    data?: unknown;
   };
 }
 
@@ -49,44 +50,18 @@ export class TRPCTestHelper {
     const response = await request(this.app)
       .post(`/trpc/${endpoint}`)
       .set('Content-Type', 'application/json')
-      .send({ input });
+      .send({ json: input });
 
     this.log('POST Request:', {
       url: `/trpc/${endpoint}`,
-      body: { input },
+      body: { json: input },
     });
     this.log('POST Response:', {
       status: response.status,
       text: response.text,
     });
 
-    try {
-      const result = JSON.parse(response.text);
-      if (result.error) {
-        return {
-          status: result.error.data?.httpStatus ?? 400,
-          error: {
-            message: result.error.message,
-            code: result.error.code,
-            ...result.error,
-          },
-        };
-      }
-
-      return {
-        status: 200,
-        data: result.result.data as TOutput,
-      };
-    } catch (error) {
-      this.log('Parse Error:', error);
-      return {
-        status: 400,
-        error: {
-          message: 'Failed to parse response',
-          code: 'PARSE_ERROR',
-        },
-      };
-    }
+    return this.convertResponse(response, response.text);
   }
 
   /**
@@ -97,10 +72,13 @@ export class TRPCTestHelper {
     input?: TInput
   ): Promise<APIResponse<TOutput>> {
     const url = input
-      ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify(input))}`
+      ? `/trpc/${endpoint}?input=${encodeURIComponent(JSON.stringify({ json: input }))}`
       : `/trpc/${endpoint}`;
 
-    const response = await request(this.app).get(url).send();
+    const response = await request(this.app)
+      .get(url)
+      .set('Content-Type', 'application/json')
+      .send();
 
     this.log('GET Request:', { url });
     this.log('GET Response:', {
@@ -108,31 +86,41 @@ export class TRPCTestHelper {
       text: response.text,
     });
 
+    return this.convertResponse(response, response.text);
+  }
+
+  private convertResponse<T>(response: Response, text: string): APIResponse<T> {
     try {
-      const result = JSON.parse(response.text);
+      const result = JSON.parse(text);
+
+      // エラーレスポンスの場合
       if (result.error) {
         return {
-          status: result.error.data?.httpStatus ?? 400,
+          status: response.status,
           error: {
-            message: result.error.message,
-            code: result.error.code,
-            ...result.error,
+            message: result.error.json.message,
+            code: result.error.json.code.toString(),
+            data: result.error.json.data,
           },
+          data: undefined,
         };
       }
 
+      // 成功レスポンスの場合
       return {
-        status: 200,
-        data: result.result.data as TOutput,
+        status: response.status,
+        error: undefined,
+        data: result.result.data.json,
       };
     } catch (error) {
-      this.log('Parse Error:', error);
       return {
-        status: 400,
+        status: response.status,
         error: {
           message: 'Failed to parse response',
-          code: 'PARSE_ERROR',
+          code: '-32603',
+          data: { error },
         },
+        data: undefined,
       };
     }
   }
