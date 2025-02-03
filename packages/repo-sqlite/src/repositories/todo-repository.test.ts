@@ -134,18 +134,21 @@ describe('TodoRepository', () => {
         priority: 'medium',
       });
 
-      const result = await repository.transaction(async () => {
-        return await repository.save(todo.toDto());
+      const result = await repository.transaction(async function (this: TodoRepository) {
+        const savedTodo = await this.save(todo.toDto());
+        const updatedTodo = Todo.reconstruct(savedTodo);
+        updatedTodo.updateTitle('Updated Transaction Todo');
+        return await this.save(updatedTodo.toDto());
       });
 
       expect(result).not.toBeNull();
-      expect(result.title).toBe('Transaction Todo');
+      expect(result.title).toBe('Updated Transaction Todo');
 
       const saved = await testDb.client.todo.findUnique({
         where: { id: result.id },
       });
       expect(saved).not.toBeNull();
-      expect(saved?.title).toBe('Transaction Todo');
+      expect(saved?.title).toBe('Updated Transaction Todo');
     }, 30000);
 
     it('トランザクションがエラーの場合、ロールバックされる', async () => {
@@ -157,9 +160,11 @@ describe('TodoRepository', () => {
 
       let error: Error | undefined;
       try {
-        await repository.transaction(async () => {
-          await repository.delete(todo.id);
-          throw new Error('Test error');
+        await repository.transaction(async function (this: TodoRepository) {
+          await this.delete(todo.id);
+          const testError = new Error('Test error');
+          testError.name = 'TestError';
+          throw testError;
         });
       } catch (e) {
         if (e instanceof Error) {
@@ -168,6 +173,7 @@ describe('TodoRepository', () => {
       }
 
       expect(error).toBeDefined();
+      expect(error?.name).toBe('TestError');
       expect(error?.message).toBe('Test error');
 
       const stillExists = await testDb.client.todo.findUnique({
