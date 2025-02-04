@@ -12,12 +12,7 @@ const TEST_DB_DIR = resolve(__dirname, '../..');
  * @param basePath データベースファイルのパス
  */
 function cleanupDatabaseFiles(basePath: string) {
-  const files = [
-    basePath,
-    `${basePath}-journal`,
-    `${basePath}-wal`,
-    `${basePath}-shm`,
-  ];
+  const files = [basePath, `${basePath}-journal`, `${basePath}-wal`, `${basePath}-shm`];
 
   for (const file of files) {
     try {
