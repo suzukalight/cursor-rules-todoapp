@@ -132,9 +132,11 @@ describe('Dialog', () => {
             <DialogTitle>ダイアログのタイトル</DialogTitle>
             <DialogDescription>ダイアログの説明</DialogDescription>
           </DialogHeader>
-          <Button>最初</Button>
-          <Button>次</Button>
-          <Button>最後</Button>
+          <div className="flex flex-col gap-4">
+            <Button data-testid="first-button">最初</Button>
+            <Button data-testid="second-button">次</Button>
+            <Button data-testid="last-button">最後</Button>
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -144,20 +146,38 @@ describe('Dialog', () => {
       await user.click(screen.getByRole('button', { name: 'ダイアログを開く' }));
     });
 
+    // ダイアログが表示されるのを待つ
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
-    // フォーカストラップをチェック
-    await act(async () => {
-      await user.tab();
-      await user.tab();
-      await user.tab();
-      await user.tab(); // 最初のフォーカス可能な要素に戻るはず
+    // 最初のボタンにフォーカスが当たっていることを確認
+    await waitFor(() => {
+      expect(screen.getByTestId('first-button')).toHaveFocus();
     });
 
+    // 次のボタンにタブ移動
+    await user.tab();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: '最初' })).toHaveFocus();
+      expect(screen.getByTestId('second-button')).toHaveFocus();
+    });
+
+    // 最後のボタンにタブ移動
+    await user.tab();
+    await waitFor(() => {
+      expect(screen.getByTestId('last-button')).toHaveFocus();
+    });
+
+    // 閉じるボタンにタブ移動
+    await user.tab();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    });
+
+    // 最初のボタンに戻る
+    await user.tab();
+    await waitFor(() => {
+      expect(screen.getByTestId('first-button')).toHaveFocus();
     });
   });
 });

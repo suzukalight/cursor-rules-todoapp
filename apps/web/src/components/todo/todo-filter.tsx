@@ -9,6 +9,8 @@ import {
 } from '@cursor-rules-todoapp/ui';
 import type { ChangeEvent } from 'react';
 
+export type ViewMode = 'grouped' | 'list';
+
 interface TodoFilterProps {
   status: TodoStatus | 'all';
   onStatusChange: (status: TodoStatus | 'all') => void;
@@ -16,6 +18,8 @@ interface TodoFilterProps {
   onSearchQueryChange: (query: string) => void;
   sortBy: 'createdAt' | 'updatedAt';
   onSortByChange: (sortBy: 'createdAt' | 'updatedAt') => void;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
 }
 
 export const TodoFilter = ({
@@ -25,6 +29,8 @@ export const TodoFilter = ({
   onSearchQueryChange,
   sortBy,
   onSortByChange,
+  viewMode,
+  onViewModeChange,
 }: TodoFilterProps) => {
   return (
     <div className="flex flex-col md:flex-row gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm">
@@ -95,6 +101,24 @@ export const TodoFilter = ({
                   <span className="pl-5">完了</span>
                 </SelectItem>
               </div>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="view-mode" className="text-sm font-medium">
+            表示
+          </label>
+          <Select value={viewMode} onValueChange={onViewModeChange}>
+            <SelectTrigger
+              id="view-mode"
+              className="w-[180px] bg-white dark:bg-gray-700 dark:text-gray-100 border-gray-200 dark:border-gray-600 rounded-lg"
+            >
+              <SelectValue placeholder="表示モード" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="grouped">期限日でグループ化</SelectItem>
+              <SelectItem value="list">リスト表示</SelectItem>
             </SelectContent>
           </Select>
         </div>

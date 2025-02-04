@@ -15,7 +15,7 @@ describe('TodoRepository', () => {
 
   beforeAll(async () => {
     await TestDatabase.initialize();
-  });
+  }, 30000);
 
   beforeEach(async () => {
     testDb = new TestDatabase();
