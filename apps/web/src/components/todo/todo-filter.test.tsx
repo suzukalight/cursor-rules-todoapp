@@ -7,6 +7,7 @@ describe('TodoFilterコンポーネント', () => {
   const mockOnStatusChange = vi.fn();
   const mockOnSearchQueryChange = vi.fn();
   const mockOnSortByChange = vi.fn();
+  const mockOnViewModeChange = vi.fn();
 
   const defaultProps = {
     status: 'all' as const,
@@ -15,6 +16,8 @@ describe('TodoFilterコンポーネント', () => {
     onSearchQueryChange: mockOnSearchQueryChange,
     sortBy: 'createdAt' as const,
     onSortByChange: mockOnSortByChange,
+    viewMode: 'list' as const,
+    onViewModeChange: mockOnViewModeChange,
   };
 
   beforeEach(() => {

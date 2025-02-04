@@ -5,7 +5,7 @@ import type { TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
 import { useEffect, useState } from 'react';
 import { ThemeToggle } from '../components/theme/theme-toggle';
-import { TodoFilter } from '../components/todo/todo-filter';
+import { TodoFilter, type ViewMode } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
 import { trpc } from '../utils/api';
 
@@ -26,6 +26,7 @@ export default function TodoPage() {
   const [status, setStatus] = useState<TodoStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt'>('createdAt');
+  const [viewMode, setViewMode] = useState<ViewMode>('grouped');
 
   const utils = trpc.useContext();
   const { data: todoResult } = trpc.todo.findAll.useQuery();
@@ -162,13 +163,17 @@ export default function TodoPage() {
         onSearchQueryChange={setSearchQuery}
         sortBy={sortBy}
         onSortByChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       <TodoList
         todos={filteredTodos}
+        viewMode={viewMode}
         onUpdateStatus={handleUpdateStatus}
         onUpdatePriority={handleUpdatePriority}
         onUpdateDueDate={handleUpdateDueDate}
+        onCreateTodo={handleCreateTodo}
       />
     </main>
   );

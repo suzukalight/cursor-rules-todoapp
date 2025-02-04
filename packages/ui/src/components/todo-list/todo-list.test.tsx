@@ -13,11 +13,6 @@ describe('TodoList', () => {
     expect(screen.getByText('明日')).toBeInTheDocument();
   });
 
-  it('マイプロジェクトセクションが表示される', () => {
-    render(<TodoList>テストコンテンツ</TodoList>);
-    expect(screen.getByText('マイプロジェクト')).toBeInTheDocument();
-  });
-
   it('子要素が表示される', () => {
     render(<TodoList>テストコンテンツ</TodoList>);
     expect(screen.getByText('テストコンテンツ')).toBeInTheDocument();

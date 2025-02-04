@@ -33,7 +33,8 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**", "test-results/**"],
+      "cache": false
     },
     "test:watch": {
       "cache": false,

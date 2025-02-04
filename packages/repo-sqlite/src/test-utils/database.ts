@@ -1,15 +1,34 @@
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { copyFileSync, existsSync, unlinkSync } from 'node:fs';
+import { existsSync, unlinkSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 
 const TEMPLATE_DB_PATH = resolve(__dirname, '../../template.db');
 const TEST_DB_DIR = resolve(__dirname, '../..');
 
+/**
+ * SQLiteデータベースの関連ファイルを削除する
+ * @param basePath データベースファイルのパス
+ */
+function cleanupDatabaseFiles(basePath: string) {
+  const files = [basePath, `${basePath}-journal`, `${basePath}-wal`, `${basePath}-shm`];
+
+  for (const file of files) {
+    try {
+      if (existsSync(file)) {
+        unlinkSync(file);
+      }
+    } catch {
+      // ファイルが存在しない場合は無視
+    }
+  }
+}
+
 export class TestDatabase {
   private dbPath: string;
   private prisma: PrismaClient;
+  private static templateInitialized = false;
 
   constructor() {
     this.dbPath = resolve(TEST_DB_DIR, `test-${randomUUID()}.db`);
@@ -23,6 +42,10 @@ export class TestDatabase {
   }
 
   static async initialize() {
+    if (TestDatabase.templateInitialized) {
+      return;
+    }
+
     // 既存のDBを削除する前に、Prismaクライアントを切断
     const prisma = new PrismaClient({
       datasources: {
@@ -31,25 +54,16 @@ export class TestDatabase {
         },
       },
     });
+
     try {
       await prisma.$disconnect();
-    } catch {
-      // 切断に失敗した場合は無視
-    }
-
-    // 既存のDBを削除
-    try {
-      unlinkSync(TEMPLATE_DB_PATH);
-      unlinkSync(`${TEMPLATE_DB_PATH}-journal`);
-      unlinkSync(`${TEMPLATE_DB_PATH}-wal`);
-      unlinkSync(`${TEMPLATE_DB_PATH}-shm`);
-    } catch {
-      // ファイルが存在しない場合は無視
+    } finally {
+      cleanupDatabaseFiles(TEMPLATE_DB_PATH);
     }
 
     try {
       // スキーマを適用
-      execSync(`cd ${TEST_DB_DIR} && npx prisma migrate reset --force`, {
+      execSync(`cd ${TEST_DB_DIR} && npx prisma migrate deploy`, {
         env: {
           ...process.env,
           DATABASE_URL: `file:${TEMPLATE_DB_PATH}`,
@@ -69,9 +83,12 @@ export class TestDatabase {
           },
         },
       });
+
       await testPrisma.$connect();
       await testPrisma.todo.count();
       await testPrisma.$disconnect();
+
+      TestDatabase.templateInitialized = true;
     } catch (error) {
       console.error('データベース初期化中にエラーが発生しました:', error);
       throw error;
@@ -79,26 +96,23 @@ export class TestDatabase {
   }
 
   async setup() {
-    // 既存のテストDBを削除
-    try {
-      unlinkSync(this.dbPath);
-      unlinkSync(`${this.dbPath}-journal`);
-      unlinkSync(`${this.dbPath}-wal`);
-      unlinkSync(`${this.dbPath}-shm`);
-    } catch {
-      // ファイルが存在しない場合は無視
-    }
-
     // テンプレートDBが存在しない場合は作成
     if (!existsSync(TEMPLATE_DB_PATH)) {
       await TestDatabase.initialize();
     }
 
-    // テストDBを作成
-    copyFileSync(TEMPLATE_DB_PATH, this.dbPath);
+    // 既存のテストDBを削除
+    cleanupDatabaseFiles(this.dbPath);
 
-    // データベースをクリーンアップ
     try {
+      // テストDBを作成
+      execSync(`cd ${TEST_DB_DIR} && npx prisma migrate deploy`, {
+        env: {
+          ...process.env,
+          DATABASE_URL: `file:${this.dbPath}`,
+        },
+      });
+
       await this.prisma.$connect();
       await this.prisma.todo.deleteMany();
     } catch (error: unknown) {
@@ -117,17 +131,8 @@ export class TestDatabase {
   async cleanup() {
     try {
       await this.prisma.$disconnect();
-    } catch {
-      // 切断に失敗した場合は無視
-    }
-
-    try {
-      unlinkSync(this.dbPath);
-      unlinkSync(`${this.dbPath}-journal`);
-      unlinkSync(`${this.dbPath}-wal`);
-      unlinkSync(`${this.dbPath}-shm`);
-    } catch {
-      // ファイルが存在しない場合は無視
+    } finally {
+      cleanupDatabaseFiles(this.dbPath);
     }
   }
 
