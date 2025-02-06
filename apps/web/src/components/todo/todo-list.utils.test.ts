@@ -17,7 +17,7 @@ describe('groupTodosByDueDate', () => {
 
   it('期限なしのタスクを正しくグルーピングすること', () => {
     const todos = [createTodo('1')];
-    const result = groupTodosByDueDate(todos);
+    const result = groupTodosByDueDate(todos, baseDate);
     expect(result.noDueDate).toHaveLength(1);
     expect(result.noDueDate[0].id).toBe('1');
   });
@@ -25,7 +25,7 @@ describe('groupTodosByDueDate', () => {
   it('今日までのタスクを正しくグルーピングすること', () => {
     const today = new Date(baseDate);
     const todos = [createTodo('1', today)];
-    const result = groupTodosByDueDate(todos);
+    const result = groupTodosByDueDate(todos, baseDate);
     expect(result.today).toHaveLength(1);
     expect(result.today[0].id).toBe('1');
   });
@@ -34,7 +34,7 @@ describe('groupTodosByDueDate', () => {
     const nextWeek = new Date(baseDate);
     nextWeek.setDate(nextWeek.getDate() + 5);
     const todos = [createTodo('1', nextWeek)];
-    const result = groupTodosByDueDate(todos);
+    const result = groupTodosByDueDate(todos, baseDate);
     expect(result.thisWeek).toHaveLength(1);
     expect(result.thisWeek[0].id).toBe('1');
   });
@@ -43,7 +43,7 @@ describe('groupTodosByDueDate', () => {
     const nextMonth = new Date(baseDate);
     nextMonth.setDate(nextMonth.getDate() + 20);
     const todos = [createTodo('1', nextMonth)];
-    const result = groupTodosByDueDate(todos);
+    const result = groupTodosByDueDate(todos, baseDate);
     expect(result.thisMonth).toHaveLength(1);
     expect(result.thisMonth[0].id).toBe('1');
   });
@@ -52,7 +52,7 @@ describe('groupTodosByDueDate', () => {
     const future = new Date(baseDate);
     future.setMonth(future.getMonth() + 2);
     const todos = [createTodo('1', future)];
-    const result = groupTodosByDueDate(todos);
+    const result = groupTodosByDueDate(todos, baseDate);
     expect(result.later).toHaveLength(1);
     expect(result.later[0].id).toBe('1');
   });
@@ -74,7 +74,7 @@ describe('groupTodosByDueDate', () => {
       createTodo('5'),
     ];
 
-    const result = groupTodosByDueDate(todos);
+    const result = groupTodosByDueDate(todos, baseDate);
     expect(result.today).toHaveLength(1);
     expect(result.thisWeek).toHaveLength(1);
     expect(result.thisMonth).toHaveLength(1);
