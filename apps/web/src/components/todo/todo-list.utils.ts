@@ -18,8 +18,8 @@ export const GROUP_LABELS: Record<DueDateGroup, string> = {
   noDueDate: '期限なし',
 };
 
-export function groupTodosByDueDate(todos: Todo[]): GroupedTodos {
-  const now = new Date();
+export function groupTodosByDueDate(todos: Todo[], baseDate?: Date): GroupedTodos {
+  const now = baseDate ?? new Date();
   now.setHours(0, 0, 0, 0);
 
   const oneWeekLater = new Date(now);
