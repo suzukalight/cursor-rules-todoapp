@@ -24,8 +24,8 @@ const convertTodoDto = (todoDto: TodoDto): Todo => ({
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [status, setStatus] = useState<TodoStatus | 'all'>('all');
+  const [priority, setPriority] = useState<TodoPriority | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt'>('createdAt');
   const [viewMode, setViewMode] = useState<ViewMode>('grouped');
 
   const utils = trpc.useContext();
@@ -134,6 +134,10 @@ export default function TodoPage() {
       return todo.status === status;
     })
     .filter((todo) => {
+      if (priority === 'all') return true;
+      return todo.priority === priority;
+    })
+    .filter((todo) => {
       if (!searchQuery) return true;
       return (
         todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -141,9 +145,9 @@ export default function TodoPage() {
       );
     })
     .sort((a, b) => {
-      const dateA = sortBy === 'createdAt' ? a.createdAt : a.updatedAt;
-      const dateB = sortBy === 'createdAt' ? b.createdAt : b.updatedAt;
-      return dateB.getTime() - dateA.getTime();
+      // 優先度でソート（高→中→低）
+      const priorityOrder = { high: 2, medium: 1, low: 0 };
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
     });
 
   return (
@@ -159,10 +163,10 @@ export default function TodoPage() {
       <TodoFilter
         status={status}
         onStatusChange={setStatus}
+        priority={priority}
+        onPriorityChange={setPriority}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
