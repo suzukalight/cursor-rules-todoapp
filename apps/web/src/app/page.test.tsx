@@ -1,16 +1,18 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import TodoPage from './page';
 
 // Next.jsのナビゲーション関数をモック
 const mockPush = vi.fn();
+let mockSearchParams = new URLSearchParams('');
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
   usePathname: () => '/todos',
-  useSearchParams: () => new URLSearchParams(''),
+  useSearchParams: () => mockSearchParams,
 }));
 
 // tRPCのクライアントをモック
@@ -41,6 +43,11 @@ vi.mock('../utils/api', () => ({
 }));
 
 describe('TodoPage', () => {
+  beforeEach(() => {
+    mockPush.mockClear();
+    mockSearchParams = new URLSearchParams('');
+  });
+
   it('フィルター条件がURLに反映される', () => {
     render(<TodoPage />);
 
@@ -76,14 +83,7 @@ describe('TodoPage', () => {
   });
 
   it('URLパラメータから初期値を読み込む', () => {
-    vi.mock('next/navigation', () => ({
-      useRouter: () => ({
-        push: mockPush,
-      }),
-      usePathname: () => '/todos',
-      useSearchParams: () => new URLSearchParams('status=pending&priority=high&q=テスト&view=list'),
-    }));
-
+    mockSearchParams = new URLSearchParams('status=pending&priority=high&q=テスト&view=list');
     render(<TodoPage />);
 
     // ステータスフィルターの初期値
