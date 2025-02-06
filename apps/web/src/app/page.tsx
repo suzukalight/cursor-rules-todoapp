@@ -29,16 +29,10 @@ const TodoPageClient = () => {
 
   // URLパラメータから初期値を取得
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [status, setStatus] = useState<TodoStatus | 'all'>(
-    (searchParams.get('status') as TodoStatus | 'all') || 'all'
-  );
-  const [priority, setPriority] = useState<TodoPriority | 'all'>(
-    (searchParams.get('priority') as TodoPriority | 'all') || 'all'
-  );
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [viewMode, setViewMode] = useState<ViewMode>(
-    (searchParams.get('view') as ViewMode) || 'grouped'
-  );
+  const [status, setStatus] = useState<TodoStatus | 'all'>('all');
+  const [priority, setPriority] = useState<TodoPriority | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grouped');
 
   const utils = trpc.useContext();
   const { data: todoResult } = trpc.todo.findAll.useQuery();
@@ -54,36 +48,66 @@ const TodoPageClient = () => {
   const updateSearchParams = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
+      const currentValue = params.get(name);
+
+      // 値が同じ場合は更新しない
+      if (currentValue === value) return;
+
       if (value && value !== 'all') {
         params.set(name, value);
       } else {
         params.delete(name);
       }
-      router.push(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`);
     },
     [pathname, router, searchParams]
   );
 
+  // URLパラメータの変更を監視して状態を更新
+  useEffect(() => {
+    const statusParam = searchParams.get('status') as TodoStatus | 'all';
+    const priorityParam = searchParams.get('priority') as TodoPriority | 'all';
+    const queryParam = searchParams.get('q');
+    const viewParam = searchParams.get('view') as ViewMode;
+
+    setStatus(statusParam || 'all');
+    setPriority(priorityParam || 'all');
+    setSearchQuery(queryParam || '');
+    setViewMode(viewParam || 'grouped');
+  }, [searchParams]);
+
   // 各フィルターの変更ハンドラー
-  const handleStatusChange = (newStatus: TodoStatus | 'all') => {
-    setStatus(newStatus);
-    updateSearchParams('status', newStatus);
-  };
+  const handleStatusChange = useCallback(
+    (newStatus: TodoStatus | 'all') => {
+      setStatus(newStatus);
+      updateSearchParams('status', newStatus);
+    },
+    [updateSearchParams]
+  );
 
-  const handlePriorityChange = (newPriority: TodoPriority | 'all') => {
-    setPriority(newPriority);
-    updateSearchParams('priority', newPriority);
-  };
+  const handlePriorityChange = useCallback(
+    (newPriority: TodoPriority | 'all') => {
+      setPriority(newPriority);
+      updateSearchParams('priority', newPriority);
+    },
+    [updateSearchParams]
+  );
 
-  const handleSearchQueryChange = (query: string) => {
-    setSearchQuery(query);
-    updateSearchParams('q', query);
-  };
+  const handleSearchQueryChange = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      updateSearchParams('q', query);
+    },
+    [updateSearchParams]
+  );
 
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
-    updateSearchParams('view', mode);
-  };
+  const handleViewModeChange = useCallback(
+    (mode: ViewMode) => {
+      setViewMode(mode);
+      updateSearchParams('view', mode);
+    },
+    [updateSearchParams]
+  );
 
   const createTodoMutation = trpc.todo.create.useMutation({
     onSuccess: async (result) => {
