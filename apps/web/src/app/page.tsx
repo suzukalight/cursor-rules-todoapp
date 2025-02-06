@@ -3,8 +3,8 @@
 import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/common';
 import type { TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState, Suspense } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { ThemeToggle } from '../components/theme/theme-toggle';
 import { TodoFilter, type ViewMode } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';

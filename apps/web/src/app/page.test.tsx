@@ -72,20 +72,16 @@ describe('TodoPage', () => {
     const listOption = screen.getByRole('option', { name: 'リスト' });
     fireEvent.click(listOption);
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/todos?status=pending&priority=high&q=テスト&view=list'
-    );
+    expect(mockPush).toHaveBeenCalledWith('/todos?status=pending&priority=high&q=テスト&view=list');
   });
 
   it('URLパラメータから初期値を読み込む', () => {
-    // URLパラメータを持つ状態でレンダリング
     vi.mock('next/navigation', () => ({
       useRouter: () => ({
         push: mockPush,
       }),
       usePathname: () => '/todos',
-      useSearchParams: () =>
-        new URLSearchParams('status=pending&priority=high&q=テスト&view=list'),
+      useSearchParams: () => new URLSearchParams('status=pending&priority=high&q=テスト&view=list'),
     }));
 
     render(<TodoPage />);
