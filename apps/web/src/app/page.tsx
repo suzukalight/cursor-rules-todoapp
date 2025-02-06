@@ -4,7 +4,7 @@ import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/commo
 import type { TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, Suspense } from 'react';
 import { ThemeToggle } from '../components/theme/theme-toggle';
 import { TodoFilter, type ViewMode } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
@@ -22,7 +22,7 @@ const convertTodoDto = (todoDto: TodoDto): Todo => ({
   updatedAt: new Date(todoDto.updatedAt),
 });
 
-export default function TodoPage() {
+const TodoPageClient = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -227,5 +227,13 @@ export default function TodoPage() {
         onCreateTodo={handleCreateTodo}
       />
     </main>
+  );
+};
+
+export default function TodoPage() {
+  return (
+    <Suspense>
+      <TodoPageClient />
+    </Suspense>
   );
 }
