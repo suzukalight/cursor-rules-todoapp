@@ -41,7 +41,7 @@ describe('TodoForm', () => {
 
     expect(screen.getByLabelText('タイトル')).toBeInTheDocument();
     expect(screen.getByLabelText('説明')).toBeInTheDocument();
-    expect(screen.getByText('作成')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '作成' })).toBeInTheDocument();
   });
 
   it('フォームを送信できる', async () => {
@@ -56,7 +56,7 @@ describe('TodoForm', () => {
 
     const titleInput = screen.getByLabelText('タイトル') as HTMLInputElement;
     const descriptionInput = screen.getByLabelText('説明') as HTMLTextAreaElement;
-    const submitButton = screen.getByText('作成');
+    const submitButton = screen.getByRole('button', { name: '作成' });
 
     fireEvent.change(titleInput, { target: { value: 'テストTodo' } });
     fireEvent.change(descriptionInput, { target: { value: 'テストの説明' } });
@@ -79,7 +79,7 @@ describe('TodoForm', () => {
 
     render(<TodoForm />);
 
-    const submitButton = screen.getByText('作成中...');
+    const submitButton = screen.getByRole('button', { name: '作成中...' });
     expect(submitButton).toBeDisabled();
   });
 });

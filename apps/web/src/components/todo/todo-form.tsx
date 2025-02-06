@@ -53,7 +53,9 @@ export function TodoForm() {
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
         />
       </div>
-      <Button type="submit">作成</Button>
+      <Button type="submit" disabled={createTodoMutation.isLoading}>
+        {createTodoMutation.isLoading ? '作成中...' : '作成'}
+      </Button>
     </form>
   );
 }

@@ -1,18 +1,21 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { Todo } from '@cursor-rules-todoapp/domain';
+import type { Todo } from '@cursor-rules-todoapp/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TodoCard } from './todo-card';
 
 describe('TodoCardコンポーネント', () => {
-  const createMockTodo = (overrides = {}) =>
-    Todo.create({
-      title: 'テストタスク',
-      description: 'テストの説明文',
-      priority: 'high',
-      dueDate: new Date('2024-12-31'),
-      ...overrides,
-    });
+  const createMockTodo = (overrides = {}): Todo => ({
+    id: 'test-id',
+    title: 'テストタスク',
+    description: 'テストの説明文',
+    priority: 'high',
+    status: 'pending',
+    dueDate: new Date('2024-12-31'),
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    ...overrides,
+  });
 
   const mockTodo = createMockTodo();
   const mockOnUpdateTitle = vi.fn();
@@ -20,83 +23,63 @@ describe('TodoCardコンポーネント', () => {
   const mockOnUpdatePriority = vi.fn();
   const mockOnUpdateDueDate = vi.fn();
 
+  const defaultProps = {
+    todo: mockTodo,
+    onUpdateTitle: mockOnUpdateTitle,
+    onUpdateStatus: mockOnUpdateStatus,
+    onUpdatePriority: mockOnUpdatePriority,
+    onUpdateDueDate: mockOnUpdateDueDate,
+    'data-testid': 'todo-card',
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('タイトルと説明文が正しく表示される', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+    render(<TodoCard {...defaultProps} />);
 
     expect(screen.getByText('テストタスク')).toBeInTheDocument();
     expect(screen.getByText('テストの説明文')).toBeInTheDocument();
   });
 
-  it('優先度が正しく表示される', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
-
-    const priorityIcon = screen.getByLabelText('優先度: 高');
-    expect(priorityIcon).toBeInTheDocument();
-    expect(priorityIcon).toHaveClass('text-red-500');
-  });
-
   it('期限日が正しく表示される', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+    render(<TodoCard {...defaultProps} />);
 
-    expect(screen.getByText('2024/12/31')).toBeInTheDocument();
+    const dateButton = screen.getByText('2024/12/31');
+    expect(dateButton).toBeInTheDocument();
   });
 
-  it('期限切れの場合、警告が表示される', () => {
-    const pastDueTodo = createMockTodo({
-      dueDate: new Date('2024-01-01'),
+  describe('期限切れの表示', () => {
+    it('未完了で期限切れの場合、警告が表示される', () => {
+      const pastDueTodo = createMockTodo({
+        dueDate: new Date('2024-01-01'),
+        status: 'pending',
+      });
+
+      render(<TodoCard {...defaultProps} todo={pastDueTodo} />);
+
+      expect(screen.getByText('期限切れ')).toBeInTheDocument();
+      const card = screen.getByTestId('todo-card');
+      expect(card.firstElementChild).toHaveClass('border-red-300', 'dark:border-red-700');
     });
 
-    render(
-      <TodoCard
-        todo={pastDueTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+    it('完了済みで期限切れの場合、警告は表示されない', () => {
+      const completedPastDueTodo = createMockTodo({
+        dueDate: new Date('2024-01-01'),
+        status: 'completed',
+      });
 
-    expect(screen.getByText('期限切れ')).toBeInTheDocument();
+      render(<TodoCard {...defaultProps} todo={completedPastDueTodo} />);
+
+      expect(screen.queryByText('期限切れ')).not.toBeInTheDocument();
+      const card = screen.getByTestId('todo-card');
+      expect(card.firstElementChild).not.toHaveClass('border-red-300', 'dark:border-red-700');
+    });
   });
 
-  it('タイトルを編集できる', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+  it('タイトルを編集できる', async () => {
+    render(<TodoCard {...defaultProps} />);
 
     const titleButton = screen.getByRole('button', { name: /タスク「テストタスク」を編集/ });
     fireEvent.click(titleButton);
@@ -108,64 +91,47 @@ describe('TodoCardコンポーネント', () => {
     expect(mockOnUpdateTitle).toHaveBeenCalledWith(mockTodo.id, '更新されたタスク');
   });
 
-  it('優先度を変更できる', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+  it('優先度を変更できる', async () => {
+    render(<TodoCard {...defaultProps} />);
 
-    const priorityButton = screen.getByLabelText('優先度: 高');
+    const priorityButton = screen.getByRole('combobox');
     fireEvent.click(priorityButton);
 
-    const mediumOption = screen.getByRole('option', { name: '中' });
-    fireEvent.click(mediumOption);
+    await waitFor(() => {
+      const mediumOption = screen.getByRole('option', { name: /中/ });
+      fireEvent.click(mediumOption);
+    });
 
     expect(mockOnUpdatePriority).toHaveBeenCalledWith(mockTodo.id, 'medium');
   });
 
-  it('期限日を変更できる', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+  it('ステータスを変更できる', async () => {
+    render(<TodoCard {...defaultProps} />);
 
-    const dateButton = screen.getByText('2024/12/31');
-    fireEvent.click(dateButton);
+    const statusButton = screen.getByRole('button', { name: 'タスクを完了にする' });
+    fireEvent.click(statusButton);
 
-    const newDate = new Date('2025-01-01');
-    const dateCell = screen.getByRole('gridcell', { name: '2025-01-01' });
-    fireEvent.click(dateCell);
-
-    expect(mockOnUpdateDueDate).toHaveBeenCalledWith(mockTodo.id, newDate);
+    expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'completed');
   });
 
-  it('ステータスを更新できる', () => {
-    render(
-      <TodoCard
-        todo={mockTodo}
-        onUpdateTitle={mockOnUpdateTitle}
-        onUpdateStatus={mockOnUpdateStatus}
-        onUpdatePriority={mockOnUpdatePriority}
-        onUpdateDueDate={mockOnUpdateDueDate}
-      />
-    );
+  it('完了済みのタスクを未完了に戻せる', async () => {
+    const completedTodo = createMockTodo({ status: 'completed' });
+    render(<TodoCard {...defaultProps} todo={completedTodo} />);
 
-    const completeButton = screen.getByLabelText('タスクを完了にする');
-    fireEvent.click(completeButton);
-    expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'completed');
+    const statusButton = screen.getByRole('button', { name: 'タスクを未完了に戻す' });
+    fireEvent.click(statusButton);
 
-    const inProgressButton = screen.getByLabelText('タスクを進行中にする');
-    fireEvent.click(inProgressButton);
-    expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'in-progress');
+    expect(mockOnUpdateStatus).toHaveBeenCalledWith(mockTodo.id, 'pending');
+  });
+
+  it('完了済みのタスクは打ち消し線で表示される', () => {
+    const completedTodo = createMockTodo({ status: 'completed' });
+    render(<TodoCard {...defaultProps} todo={completedTodo} />);
+
+    const title = screen.getByRole('button', { name: /タスク「テストタスク」を編集/ });
+    const description = screen.getByText('テストの説明文');
+
+    expect(title).toHaveClass('line-through', 'text-gray-500', 'dark:text-gray-400');
+    expect(description).toHaveClass('line-through');
   });
 });

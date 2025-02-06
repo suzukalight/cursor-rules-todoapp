@@ -61,11 +61,15 @@ describe('TodoItem', () => {
 
   test('タグが表示される', () => {
     render(
-      <TodoItem title="Test Todo" tag={{ name: 'important', color: '#ff0000' }} priority="medium" />
+      <TodoItem
+        title="Test Todo"
+        tag={{ name: 'important', color: 'text-red-600' }}
+        priority="medium"
+      />
     );
-    const hashTag = screen.getByText('#');
-    expect(hashTag).toHaveStyle({ color: '#ff0000' });
-    expect(screen.getByText('important')).toBeInTheDocument();
+    const tagElement = screen.getByText('important');
+    expect(tagElement).toBeInTheDocument();
+    expect(tagElement).toHaveClass('text-red-600');
   });
 
   test('チェックボックスをクリックするとonToggleが呼ばれる', () => {

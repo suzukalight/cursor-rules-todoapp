@@ -93,74 +93,73 @@ export const TodoItem = ({
   };
 
   return (
-    <div className="flex flex-col gap-1 py-2 animate-slide-in">
+    <div className="flex flex-col gap-1 py-2 animate-slide-in" data-testid="todo-item">
       {/* 上段：チェックボックスとタイトル */}
       <div className="flex items-center gap-2">
         <Checkbox checked={completed} onCheckedChange={onToggle} />
         <span
-          className={`transition-all duration-200 ${completed ? 'text-gray-400 line-through' : ''}`}
+          className={`transition-all duration-200 ${
+            completed ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'
+          }`}
         >
           {title}
         </span>
       </div>
 
-      {/* 下段：メタ情報 */}
+      {/* 下段：期限とタグ */}
       <div className="flex items-center justify-between pl-8">
         <div className="flex items-center gap-4">
-          {/* スケジュール情報 */}
+          {/* 期限 */}
           <div className="flex items-center gap-1 text-sm">
-            {isRecurring && <Repeat className="h-4 w-4 text-gray-400" data-testid="repeat-icon" />}
-            <button
-              type="button"
-              onClick={() => setEditingDueDate(true)}
-              className={`${isOverdue ? 'text-red-500' : 'text-gray-500'}`}
-            >
-              {formattedDate}
-            </button>
-            {editingDueDate && (
+            {editingDueDate ? (
               <input
+                ref={dateInputRef}
                 type="date"
                 value={inputValue}
-                onChange={(e) => handleDueDateChange(e.target.value)}
+                onChange={(e) => setInputValue(e.target.value)}
                 onBlur={handleBlur}
-                ref={dateInputRef}
-                className="border border-gray-300 rounded text-sm ml-2 px-2 py-1"
+                className="w-32 px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                aria-label="期限"
               />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setEditingDueDate(true)}
+                className={`text-gray-500 ${isOverdue ? 'text-red-500' : ''}`}
+              >
+                {formattedDate}
+              </button>
             )}
+            {hasAlarm && <Bell data-testid="bell-icon" className="h-4 w-4 text-gray-400" />}
+            {isRecurring && <Repeat data-testid="repeat-icon" className="h-4 w-4 text-gray-400" />}
           </div>
 
-          {/* アラーム */}
-          {hasAlarm && <Bell className="h-4 w-4 text-gray-400" data-testid="bell-icon" />}
-        </div>
-
-        <div className="flex items-center gap-4">
           {/* タグ */}
           {tag && (
-            <div className="flex items-center text-xs whitespace-nowrap">
-              <span className="px-1 py-0.5" style={{ color: tag.color }}>
-                #
-              </span>
-              <span className="text-gray-600 truncate max-w-[8em]">{tag.name}</span>
-            </div>
+            <span className="px-2 py-0.5 rounded-full text-xs bg-opacity-10">
+              <span className={tag.color}>{tag.name}</span>
+            </span>
           )}
+        </div>
 
-          {/* 優先度 */}
+        {/* 優先度 */}
+        <div className="flex items-center gap-4">
           <Select value={priority} onValueChange={onPriorityChange}>
             <SelectTrigger className="h-auto border-0 bg-transparent p-0 hover:bg-gray-100 hover:text-gray-900 [&>svg]:hidden">
               <span className={`text-xs ${priorityColors[priority]}`}>
                 {priorityLabels[priority]}
               </span>
             </SelectTrigger>
-            <SelectContent>
-              {Object.entries(priorityLabels).map(([value, label]) => (
-                <SelectItem
-                  key={value}
-                  value={value}
-                  className={`text-xs ${priorityColors[value as TodoPriority]}`}
-                >
-                  {label}
-                </SelectItem>
-              ))}
+            <SelectContent align="start" sideOffset={4}>
+              <SelectItem value="high" className="text-red-600">
+                高
+              </SelectItem>
+              <SelectItem value="medium" className="text-yellow-600">
+                中
+              </SelectItem>
+              <SelectItem value="low" className="text-blue-600">
+                低
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
