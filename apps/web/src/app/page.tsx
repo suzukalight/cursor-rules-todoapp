@@ -3,7 +3,8 @@
 import type { Todo, TodoPriority, TodoStatus } from '@cursor-rules-todoapp/common';
 import type { TodoDto } from '@cursor-rules-todoapp/domain/src/todo/todo';
 import { AddTodoButton } from '@cursor-rules-todoapp/ui';
-import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import { ThemeToggle } from '../components/theme/theme-toggle';
 import { TodoFilter, type ViewMode } from '../components/todo/todo-filter';
 import { TodoList } from '../components/todo/todo-list';
@@ -22,11 +23,22 @@ const convertTodoDto = (todoDto: TodoDto): Todo => ({
 });
 
 export default function TodoPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URLパラメータから初期値を取得
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [status, setStatus] = useState<TodoStatus | 'all'>('all');
-  const [priority, setPriority] = useState<TodoPriority | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grouped');
+  const [status, setStatus] = useState<TodoStatus | 'all'>(
+    (searchParams.get('status') as TodoStatus | 'all') || 'all'
+  );
+  const [priority, setPriority] = useState<TodoPriority | 'all'>(
+    (searchParams.get('priority') as TodoPriority | 'all') || 'all'
+  );
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    (searchParams.get('view') as ViewMode) || 'grouped'
+  );
 
   const utils = trpc.useContext();
   const { data: todoResult } = trpc.todo.findAll.useQuery();
@@ -37,6 +49,41 @@ export default function TodoPage() {
       setTodos(convertedTodos);
     }
   }, [todoResult]);
+
+  // URLパラメータを更新する関数
+  const updateSearchParams = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value !== 'all') {
+        params.set(name, value);
+      } else {
+        params.delete(name);
+      }
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams]
+  );
+
+  // 各フィルターの変更ハンドラー
+  const handleStatusChange = (newStatus: TodoStatus | 'all') => {
+    setStatus(newStatus);
+    updateSearchParams('status', newStatus);
+  };
+
+  const handlePriorityChange = (newPriority: TodoPriority | 'all') => {
+    setPriority(newPriority);
+    updateSearchParams('priority', newPriority);
+  };
+
+  const handleSearchQueryChange = (query: string) => {
+    setSearchQuery(query);
+    updateSearchParams('q', query);
+  };
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    updateSearchParams('view', mode);
+  };
 
   const createTodoMutation = trpc.todo.create.useMutation({
     onSuccess: async (result) => {
@@ -162,13 +209,13 @@ export default function TodoPage() {
 
       <TodoFilter
         status={status}
-        onStatusChange={setStatus}
+        onStatusChange={handleStatusChange}
         priority={priority}
-        onPriorityChange={setPriority}
+        onPriorityChange={handlePriorityChange}
         searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
+        onSearchQueryChange={handleSearchQueryChange}
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={handleViewModeChange}
       />
 
       <TodoList
