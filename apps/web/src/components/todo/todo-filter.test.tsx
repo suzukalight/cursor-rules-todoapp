@@ -6,16 +6,16 @@ import { TodoFilter } from './todo-filter';
 describe('TodoFilterコンポーネント', () => {
   const mockOnStatusChange = vi.fn();
   const mockOnSearchQueryChange = vi.fn();
-  const mockOnSortByChange = vi.fn();
+  const mockOnPriorityChange = vi.fn();
   const mockOnViewModeChange = vi.fn();
 
   const defaultProps = {
     status: 'all' as const,
     onStatusChange: mockOnStatusChange,
+    priority: 'all' as const,
+    onPriorityChange: mockOnPriorityChange,
     searchQuery: '',
     onSearchQueryChange: mockOnSearchQueryChange,
-    sortBy: 'createdAt' as const,
-    onSortByChange: mockOnSortByChange,
     viewMode: 'list' as const,
     onViewModeChange: mockOnViewModeChange,
   };
@@ -39,21 +39,51 @@ describe('TodoFilterコンポーネント', () => {
     const statusSelect = screen.getByRole('combobox', { name: /ステータス/i });
     fireEvent.click(statusSelect);
 
-    const pendingOption = screen.getByRole('option', { name: '未完了' });
+    const pendingOption = screen.getByRole('option', { name: '未着手' });
     fireEvent.click(pendingOption);
 
     expect(mockOnStatusChange).toHaveBeenCalledWith('pending');
   });
 
-  it('並び替えが正しく動作する', () => {
+  it('優先度フィルターが正しく動作する', () => {
     render(<TodoFilter {...defaultProps} />);
 
-    const sortSelect = screen.getByRole('combobox', { name: /並び替え/i });
-    fireEvent.click(sortSelect);
+    const prioritySelect = screen.getByRole('combobox', { name: /優先度/i });
+    fireEvent.click(prioritySelect);
 
-    const updatedAtOption = screen.getByRole('option', { name: '更新日' });
-    fireEvent.click(updatedAtOption);
+    // 高優先度を選択
+    const highOption = screen.getByRole('option', { name: '高' });
+    fireEvent.click(highOption);
+    expect(mockOnPriorityChange).toHaveBeenCalledWith('high');
 
-    expect(mockOnSortByChange).toHaveBeenCalledWith('updatedAt');
+    // 中優先度を選択
+    fireEvent.click(prioritySelect);
+    const mediumOption = screen.getByRole('option', { name: '中' });
+    fireEvent.click(mediumOption);
+    expect(mockOnPriorityChange).toHaveBeenCalledWith('medium');
+
+    // 低優先度を選択
+    fireEvent.click(prioritySelect);
+    const lowOption = screen.getByRole('option', { name: '低' });
+    fireEvent.click(lowOption);
+    expect(mockOnPriorityChange).toHaveBeenCalledWith('low');
+
+    // すべてを選択
+    fireEvent.click(prioritySelect);
+    const allOption = screen.getByRole('option', { name: 'すべて' });
+    fireEvent.click(allOption);
+    expect(mockOnPriorityChange).toHaveBeenCalledWith('all');
+  });
+
+  it('表示モードの切り替えが正しく動作する', () => {
+    render(<TodoFilter {...defaultProps} />);
+
+    const viewModeSelect = screen.getByRole('combobox', { name: /表示/i });
+    fireEvent.click(viewModeSelect);
+
+    const groupedOption = screen.getByRole('option', { name: '期限日でグループ化' });
+    fireEvent.click(groupedOption);
+
+    expect(mockOnViewModeChange).toHaveBeenCalledWith('grouped');
   });
 });
