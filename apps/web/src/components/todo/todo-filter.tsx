@@ -127,6 +127,7 @@ export const TodoFilter = ({
                 <SelectItem
                   className="relative rounded-lg text-gray-900 dark:text-gray-100 data-[highlighted]:bg-gray-100 dark:data-[highlighted]:bg-gray-600 py-2"
                   value="all"
+                  data-testid="priority-all-option"
                 >
                   <span className="absolute left-1">
                     <span className="sr-only">選択済み</span>
